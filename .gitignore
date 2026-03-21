@@ -1,0 +1,36 @@
+node_modules/
+dist/
+.turbo/
+.expo/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Bun
+bun.lockb
+
+# Database files
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# Uploads
+uploads/
+
+# Build outputs
+.output/
+android/
+ios/
