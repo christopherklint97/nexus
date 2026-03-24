@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./api";
 
 export interface NoteBlock {
@@ -48,7 +48,12 @@ export function parseBlocks(json: string | null): NoteBlock[] {
 	}
 }
 
-export function useNotesQuery(params: { workspaceId: string; folderId?: string; pinned?: boolean; search?: string }) {
+export function useNotesQuery(params: {
+	workspaceId: string;
+	folderId?: string;
+	pinned?: boolean;
+	search?: string;
+}) {
 	const qs = new URLSearchParams();
 	qs.set("workspaceId", params.workspaceId);
 	if (params.folderId) qs.set("folderId", params.folderId);
@@ -90,7 +95,13 @@ export function useFoldersQuery(workspaceId: string) {
 export function useCreateNote() {
 	const qc = useQueryClient();
 	return useMutation({
-		mutationFn: async (input: { title: string; contentBlocks?: NoteBlock[]; folderId?: string; isPinned?: boolean; workspaceId: string }) => {
+		mutationFn: async (input: {
+			title: string;
+			contentBlocks?: NoteBlock[];
+			folderId?: string;
+			isPinned?: boolean;
+			workspaceId: string;
+		}) => {
 			const res = await api.post("/api/notes", input);
 			return (await res.json()).data as Note;
 		},
@@ -101,7 +112,16 @@ export function useCreateNote() {
 export function useUpdateNote() {
 	const qc = useQueryClient();
 	return useMutation({
-		mutationFn: async ({ id, ...input }: { id: string; title?: string; contentBlocks?: NoteBlock[]; folderId?: string | null; isPinned?: boolean }) => {
+		mutationFn: async ({
+			id,
+			...input
+		}: {
+			id: string;
+			title?: string;
+			contentBlocks?: NoteBlock[];
+			folderId?: string | null;
+			isPinned?: boolean;
+		}) => {
 			const res = await api.patch(`/api/notes/${id}`, input);
 			return (await res.json()).data as Note;
 		},

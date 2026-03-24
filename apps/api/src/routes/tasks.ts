@@ -1,9 +1,9 @@
-import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { and, desc, eq, isNull, asc, sql } from "drizzle-orm";
-import { z } from "zod";
-import { tasks, taskLabels, labels } from "@nexus/db/schema";
+import { labels, taskLabels, tasks } from "@nexus/db/schema";
 import { createTaskSchema, updateTaskSchema } from "@nexus/shared/validators";
+import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
+import { Hono } from "hono";
+import { z } from "zod";
 import { db } from "../lib/db.js";
 import { authMiddleware } from "../middleware/auth.js";
 
@@ -23,10 +23,7 @@ const taskQuerySchema = z.object({
 tasksRouter.get("/", zValidator("query", taskQuerySchema), async (c) => {
 	const { workspaceId, status, priority, parentTaskId, sort, order } = c.req.valid("query");
 
-	const conditions = [
-		eq(tasks.workspaceId, workspaceId),
-		isNull(tasks.deletedAt),
-	];
+	const conditions = [eq(tasks.workspaceId, workspaceId), isNull(tasks.deletedAt)];
 
 	if (status) conditions.push(eq(tasks.status, status));
 	if (priority) conditions.push(eq(tasks.priority, priority));
@@ -248,15 +245,19 @@ const labelSchema = z.object({
 });
 
 // List labels
-tasksRouter.get("/labels/list", zValidator("query", z.object({ workspaceId: z.string().uuid() })), async (c) => {
-	const { workspaceId } = c.req.valid("query");
-	const result = db
-		.select()
-		.from(labels)
-		.where(and(eq(labels.workspaceId, workspaceId), isNull(labels.deletedAt)))
-		.all();
-	return c.json({ data: result });
-});
+tasksRouter.get(
+	"/labels/list",
+	zValidator("query", z.object({ workspaceId: z.string().uuid() })),
+	async (c) => {
+		const { workspaceId } = c.req.valid("query");
+		const result = db
+			.select()
+			.from(labels)
+			.where(and(eq(labels.workspaceId, workspaceId), isNull(labels.deletedAt)))
+			.all();
+		return c.json({ data: result });
+	},
+);
 
 // Create label
 tasksRouter.post("/labels", zValidator("json", labelSchema), async (c) => {
@@ -264,7 +265,9 @@ tasksRouter.post("/labels", zValidator("json", labelSchema), async (c) => {
 	const id = crypto.randomUUID();
 	const now = new Date().toISOString();
 
-	db.insert(labels).values({ id, ...input, createdAt: now, updatedAt: now }).run();
+	db.insert(labels)
+		.values({ id, ...input, createdAt: now, updatedAt: now })
+		.run();
 	const label = db.select().from(labels).where(eq(labels.id, id)).get();
 	return c.json({ data: label }, 201);
 });

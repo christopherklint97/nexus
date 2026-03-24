@@ -1,16 +1,16 @@
-import { useState, useCallback } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View, ActivityIndicator } from "react-native";
 import { Stack, router } from "expo-router";
+import { useCallback, useState } from "react";
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 
-import Colors from "@/constants/Colors";
-import { useColorScheme } from "@/components/useColorScheme";
-import { useWorkspaceStore } from "@/stores/workspace";
-import { useShoppingListsQuery } from "@/lib/shopping";
-import type { ShoppingList } from "@/lib/shopping";
-import { ShoppingListCard } from "@/components/shopping/ShoppingListCard";
 import { CreateListSheet } from "@/components/shopping/CreateListSheet";
 import { RoutePlanner } from "@/components/shopping/RoutePlanner";
+import { ShoppingListCard } from "@/components/shopping/ShoppingListCard";
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
+import { useShoppingListsQuery } from "@/lib/shopping";
+import type { ShoppingList } from "@/lib/shopping";
+import { useWorkspaceStore } from "@/stores/workspace";
 
 export default function ShoppingScreen() {
 	const colorScheme = useColorScheme();
@@ -31,7 +31,9 @@ export default function ShoppingScreen() {
 				<Stack.Screen options={{ title: "Shopping" }} />
 				<View style={[styles.center, { backgroundColor: colors.background }]}>
 					<Text style={[styles.emptyTitle, { color: colors.text }]}>No workspace</Text>
-					<Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>Sign in to see your shopping lists</Text>
+					<Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
+						Sign in to see your shopping lists
+					</Text>
 				</View>
 			</>
 		);
@@ -112,7 +114,13 @@ const styles = StyleSheet.create({
 	emptyContainer: { alignItems: "center", paddingTop: 120 },
 	emptyTitle: { fontSize: 18, fontWeight: "700" },
 	emptySubtitle: { fontSize: 14, marginTop: 6 },
-	routeButton: { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 6, borderWidth: 1, marginRight: 4 },
+	routeButton: {
+		paddingHorizontal: 12,
+		paddingVertical: 5,
+		borderRadius: 6,
+		borderWidth: 1,
+		marginRight: 4,
+	},
 	routeButtonText: { fontSize: 13, fontWeight: "600" },
 	fab: {
 		position: "absolute",

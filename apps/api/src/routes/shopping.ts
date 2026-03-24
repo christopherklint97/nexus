@@ -1,9 +1,9 @@
-import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { and, eq, isNull, asc, desc, sql } from "drizzle-orm";
+import { shoppingItems, shoppingLists, shoppingRoutes } from "@nexus/db/schema";
+import { createShoppingItemSchema, createShoppingListSchema } from "@nexus/shared/validators";
+import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
+import { Hono } from "hono";
 import { z } from "zod";
-import { shoppingLists, shoppingItems, shoppingRoutes } from "@nexus/db/schema";
-import { createShoppingListSchema, createShoppingItemSchema } from "@nexus/shared/validators";
 import { db } from "../lib/db.js";
 import { authMiddleware } from "../middleware/auth.js";
 
@@ -159,9 +159,15 @@ shopping.delete("/lists/:id", async (c) => {
 	const id = c.req.param("id");
 	const now = new Date().toISOString();
 
-	db.update(shoppingLists).set({ deletedAt: now, updatedAt: now }).where(eq(shoppingLists.id, id)).run();
+	db.update(shoppingLists)
+		.set({ deletedAt: now, updatedAt: now })
+		.where(eq(shoppingLists.id, id))
+		.run();
 	// Also soft-delete all items in the list
-	db.update(shoppingItems).set({ deletedAt: now, updatedAt: now }).where(eq(shoppingItems.listId, id)).run();
+	db.update(shoppingItems)
+		.set({ deletedAt: now, updatedAt: now })
+		.where(eq(shoppingItems.listId, id))
+		.run();
 
 	return c.json({ data: { id, deleted: true } });
 });
@@ -190,10 +196,7 @@ shopping.post("/items", zValidator("json", createShoppingItemSchema), async (c) 
 		.run();
 
 	// Update parent list's updatedAt
-	db.update(shoppingLists)
-		.set({ updatedAt: now })
-		.where(eq(shoppingLists.id, input.listId))
-		.run();
+	db.update(shoppingLists).set({ updatedAt: now }).where(eq(shoppingLists.id, input.listId)).run();
 
 	const item = db.select().from(shoppingItems).where(eq(shoppingItems.id, id)).get();
 	return c.json({ data: item }, 201);
@@ -245,7 +248,10 @@ shopping.patch(
 shopping.delete("/items/:id", async (c) => {
 	const id = c.req.param("id");
 	const now = new Date().toISOString();
-	db.update(shoppingItems).set({ deletedAt: now, updatedAt: now }).where(eq(shoppingItems.id, id)).run();
+	db.update(shoppingItems)
+		.set({ deletedAt: now, updatedAt: now })
+		.where(eq(shoppingItems.id, id))
+		.run();
 	return c.json({ data: { id, deleted: true } });
 });
 
@@ -317,7 +323,7 @@ shopping.post("/routes/optimize", zValidator("json", optimizeSchema), async (c) 
 
 		while (remaining.length > 0) {
 			let nearestIdx = 0;
-			let nearestDist = Infinity;
+			let nearestDist = Number.POSITIVE_INFINITY;
 
 			for (let i = 0; i < remaining.length; i++) {
 				const store = remaining[i];
@@ -427,9 +433,7 @@ function haversine(lat1: number, lng1: number, lat2: number, lng2: number): numb
 	const dLng = ((lng2 - lng1) * Math.PI) / 180;
 	const a =
 		Math.sin(dLat / 2) ** 2 +
-		Math.cos((lat1 * Math.PI) / 180) *
-			Math.cos((lat2 * Math.PI) / 180) *
-			Math.sin(dLng / 2) ** 2;
+		Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
 	return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 

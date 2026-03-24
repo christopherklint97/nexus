@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./api";
 
 export interface CalendarEvent {
@@ -32,7 +32,7 @@ export function useCalendarStatus() {
 		queryKey: ["calendar-status"],
 		queryFn: async () => {
 			const res = await api.get("/api/calendar/status");
-			return ((await res.json()).data as { connected: boolean });
+			return (await res.json()).data as { connected: boolean };
 		},
 	});
 }
@@ -72,7 +72,10 @@ export function useCreateEvent() {
 export function useUpdateEvent() {
 	const qc = useQueryClient();
 	return useMutation({
-		mutationFn: async ({ id, ...input }: {
+		mutationFn: async ({
+			id,
+			...input
+		}: {
 			id: string;
 			summary?: string;
 			description?: string;
@@ -121,7 +124,11 @@ export function endOfWeek(date: Date): Date {
 }
 
 export function isSameDay(a: Date, b: Date): boolean {
-	return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+	return (
+		a.getFullYear() === b.getFullYear() &&
+		a.getMonth() === b.getMonth() &&
+		a.getDate() === b.getDate()
+	);
 }
 
 export function formatTime(dateStr: string): string {

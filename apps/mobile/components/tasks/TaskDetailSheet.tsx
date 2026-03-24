@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
-	Modal,
 	KeyboardAvoidingView,
+	Modal,
 	Platform,
 	Pressable,
 	ScrollView,
@@ -11,11 +11,10 @@ import {
 	View,
 } from "react-native";
 
-import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
+import { useCreateTask, useDeleteTask, useTaskDetailQuery, useUpdateTask } from "@/lib/tasks";
 import { PriorityBadge } from "./PriorityBadge";
-import { useUpdateTask, useDeleteTask, useTaskDetailQuery, useCreateTask } from "@/lib/tasks";
-import type { Task } from "@/lib/tasks";
 
 interface TaskDetailSheetProps {
 	taskId: string | null;
@@ -82,7 +81,12 @@ export function TaskDetailSheet({ taskId, workspaceId, visible, onClose }: TaskD
 	};
 
 	return (
-		<Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+		<Modal
+			visible={visible}
+			animationType="slide"
+			presentationStyle="pageSheet"
+			onRequestClose={onClose}
+		>
 			<KeyboardAvoidingView
 				behavior={Platform.OS === "ios" ? "padding" : "height"}
 				style={[styles.container, { backgroundColor: colors.background }]}
@@ -129,8 +133,7 @@ export function TaskDetailSheet({ taskId, workspaceId, visible, onClose }: TaskD
 								style={[
 									styles.statusChip,
 									{
-										backgroundColor:
-											status === opt.key ? colors.tint + "15" : colors.surface,
+										backgroundColor: status === opt.key ? colors.tint + "15" : colors.surface,
 										borderColor: status === opt.key ? colors.tint : colors.border,
 									},
 								]}
@@ -182,9 +185,7 @@ export function TaskDetailSheet({ taskId, workspaceId, visible, onClose }: TaskD
 											{ backgroundColor: label.color + "20", borderColor: label.color + "40" },
 										]}
 									>
-										<Text style={[styles.labelText, { color: label.color }]}>
-											{label.name}
-										</Text>
+										<Text style={[styles.labelText, { color: label.color }]}>{label.name}</Text>
 									</View>
 								))}
 							</View>
@@ -235,7 +236,10 @@ export function TaskDetailSheet({ taskId, workspaceId, visible, onClose }: TaskD
 					</View>
 
 					{/* Delete */}
-					<Pressable style={[styles.deleteButton, { borderColor: colors.danger }]} onPress={handleDelete}>
+					<Pressable
+						style={[styles.deleteButton, { borderColor: colors.danger }]}
+						onPress={handleDelete}
+					>
 						<Text style={[styles.deleteText, { color: colors.danger }]}>Delete Task</Text>
 					</Pressable>
 				</ScrollView>

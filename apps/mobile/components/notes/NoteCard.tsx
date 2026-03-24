@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 import type { Note } from "@/lib/notes";
 import { parseBlocks } from "@/lib/notes";
 

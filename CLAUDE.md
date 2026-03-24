@@ -1,7 +1,7 @@
 # Nexus — Development Guide
 
 ## Project Overview
-Cross-platform personal assistant PWA: tasks, shopping, notes, calendar unified in one Notion-inspired app.
+Cross-platform personal assistant PWA: tasks, shopping, recipes, notes, calendar unified in one Notion-inspired app.
 
 ## Tech Stack
 - **Frontend:** Expo SDK 55, React Native 0.83, TypeScript strict, Expo Router v4, NativeWind v4, Zustand 5, TanStack Query v5
@@ -50,13 +50,15 @@ pnpm run dev
 - `GET|POST|PATCH|DELETE /api/shopping/lists|items` — Shopping lists & items
 - `POST /api/shopping/routes/optimize` — Nearest-neighbor route optimization
 - `GET|POST|PATCH|DELETE /api/notes` — Notes + folders + documents + FTS5 search
+- `GET|POST|PATCH|DELETE /api/recipes` — Recipes (structured ingredients, instructions, metadata)
+- `POST /api/recipes/:id/add-to-list` — Add recipe ingredients to a shopping list (with scaling)
 - `GET /api/calendar/google/auth|callback` — Google OAuth flow
 - `GET|POST|PATCH|DELETE /api/calendar/events` — Calendar events proxy (cached)
 - `POST /api/sync/push` | `GET /api/sync/pull` — Offline sync engine
 - `GET /api/search?q=` — Global search across all modules
 
 ## Database
-- Schema: `packages/db/src/schema/` (13 tables)
+- Schema: `packages/db/src/schema/` (14 tables)
 - Initialized: `apps/api/src/lib/db.ts` via `initializeDatabase()`
 - Migration path: SQLite → Postgres/Supabase (swap Drizzle dialect)
 

@@ -1,27 +1,27 @@
-import { useState, useMemo } from "react";
+import { Stack, router, useLocalSearchParams } from "expo-router";
+import { useMemo, useState } from "react";
 import {
-	SectionList,
+	ActivityIndicator,
+	Alert,
 	Pressable,
+	SectionList,
 	StyleSheet,
 	Text,
 	View,
-	ActivityIndicator,
-	Alert,
 } from "react-native";
-import { Stack, useLocalSearchParams, router } from "expo-router";
 import Animated, { FadeIn } from "react-native-reanimated";
 
-import Colors from "@/constants/Colors";
+import { AddItemSheet } from "@/components/shopping/AddItemSheet";
+import { ShoppingItemRow } from "@/components/shopping/ShoppingItemRow";
 import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 import {
-	useShoppingListDetailQuery,
-	useUpdateShoppingItem,
 	useDeleteShoppingItem,
 	useDeleteShoppingList,
+	useShoppingListDetailQuery,
+	useUpdateShoppingItem,
 } from "@/lib/shopping";
 import type { ShoppingItem } from "@/lib/shopping";
-import { ShoppingItemRow } from "@/components/shopping/ShoppingItemRow";
-import { AddItemSheet } from "@/components/shopping/AddItemSheet";
 
 export default function ShoppingListDetailScreen() {
 	const { listId } = useLocalSearchParams<{ listId: string }>();
@@ -127,7 +127,10 @@ export default function ShoppingListDetailScreen() {
 				{/* Summary bar */}
 				<Animated.View
 					entering={FadeIn.duration(300)}
-					style={[styles.summaryBar, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}
+					style={[
+						styles.summaryBar,
+						{ backgroundColor: colors.surface, borderBottomColor: colors.border },
+					]}
 				>
 					<View style={styles.summaryItem}>
 						<Text style={[styles.summaryValue, { color: colors.text }]}>
@@ -182,11 +185,7 @@ export default function ShoppingListDetailScreen() {
 				</Pressable>
 			</View>
 
-			<AddItemSheet
-				visible={showAddItem}
-				listId={listId}
-				onClose={() => setShowAddItem(false)}
-			/>
+			<AddItemSheet visible={showAddItem} listId={listId} onClose={() => setShowAddItem(false)} />
 		</>
 	);
 }

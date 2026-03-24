@@ -1,5 +1,4 @@
 import { integer, text } from "drizzle-orm/sqlite-core";
-import type { SQLiteColumnBuilderBase } from "drizzle-orm/sqlite-core";
 
 export const baseColumns = {
 	id: text("id")

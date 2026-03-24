@@ -1,6 +1,6 @@
 import { Database } from "bun:sqlite";
-import { drizzle } from "drizzle-orm/bun-sqlite";
 import * as schema from "@nexus/db/schema";
+import { drizzle } from "drizzle-orm/bun-sqlite";
 
 const sqlite = new Database(process.env.DATABASE_URL || "nexus.db");
 sqlite.exec("PRAGMA journal_mode = WAL;");
@@ -159,6 +159,28 @@ const tableStatements = [
 		refresh_token_encrypted text NOT NULL,
 		user_id text NOT NULL,
 		FOREIGN KEY (user_id) REFERENCES users(id)
+	)`,
+	`CREATE TABLE IF NOT EXISTS recipes (
+		id text PRIMARY KEY NOT NULL,
+		created_at text NOT NULL,
+		updated_at text NOT NULL,
+		deleted_at text,
+		sync_version integer DEFAULT 0 NOT NULL,
+		title text NOT NULL,
+		description text,
+		ingredients_json text,
+		instructions_json text,
+		prep_time integer,
+		cook_time integer,
+		servings integer,
+		cuisine text,
+		difficulty text,
+		source_url text,
+		image_url text,
+		tags_json text,
+		is_favorite integer DEFAULT 0 NOT NULL,
+		workspace_id text NOT NULL,
+		FOREIGN KEY (workspace_id) REFERENCES workspaces(id)
 	)`,
 	`CREATE TABLE IF NOT EXISTS sync_log (
 		id text PRIMARY KEY NOT NULL,

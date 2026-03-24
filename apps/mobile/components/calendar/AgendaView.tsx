@@ -1,8 +1,8 @@
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
-import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
-import { formatTime, isSameDay, EVENT_COLORS } from "@/lib/calendar";
+import Colors from "@/constants/Colors";
+import { EVENT_COLORS, formatTime, isSameDay } from "@/lib/calendar";
 import type { CalendarEvent } from "@/lib/calendar";
 import type { Task } from "@/lib/tasks";
 
@@ -25,7 +25,13 @@ interface AgendaViewProps {
 	onPressTask?: (task: Task) => void;
 }
 
-export function AgendaView({ date, events, tasks = [], onPressEvent, onPressTask }: AgendaViewProps) {
+export function AgendaView({
+	date,
+	events,
+	tasks = [],
+	onPressEvent,
+	onPressTask,
+}: AgendaViewProps) {
 	const colorScheme = useColorScheme();
 	const colors = Colors[colorScheme];
 
@@ -43,7 +49,7 @@ export function AgendaView({ date, events, tasks = [], onPressEvent, onPressTask
 			title: e.title,
 			startTime: e.startDateTime,
 			endTime: e.endDateTime,
-			color: e.colorId ? (EVENT_COLORS[e.colorId] || colors.tint) : colors.tint,
+			color: e.colorId ? EVENT_COLORS[e.colorId] || colors.tint : colors.tint,
 			allDay: e.allDay,
 		})),
 		...dayTasks.map((t) => ({

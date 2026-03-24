@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
-	Modal,
 	KeyboardAvoidingView,
+	Modal,
 	Platform,
 	Pressable,
 	StyleSheet,
@@ -10,8 +10,8 @@ import {
 	View,
 } from "react-native";
 
-import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 import { useCreateShoppingList } from "@/lib/shopping";
 
 interface CreateListSheetProps {
@@ -21,7 +21,12 @@ interface CreateListSheetProps {
 	onCreated: (listId: string) => void;
 }
 
-export function CreateListSheet({ visible, workspaceId, onClose, onCreated }: CreateListSheetProps) {
+export function CreateListSheet({
+	visible,
+	workspaceId,
+	onClose,
+	onCreated,
+}: CreateListSheetProps) {
 	const colorScheme = useColorScheme();
 	const colors = Colors[colorScheme];
 	const createList = useCreateShoppingList();
@@ -52,7 +57,12 @@ export function CreateListSheet({ visible, workspaceId, onClose, onCreated }: Cr
 	};
 
 	return (
-		<Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+		<Modal
+			visible={visible}
+			animationType="slide"
+			presentationStyle="pageSheet"
+			onRequestClose={onClose}
+		>
 			<KeyboardAvoidingView
 				behavior={Platform.OS === "ios" ? "padding" : "height"}
 				style={[styles.container, { backgroundColor: colors.background }]}
@@ -63,7 +73,12 @@ export function CreateListSheet({ visible, workspaceId, onClose, onCreated }: Cr
 					</Pressable>
 					<Text style={[styles.headerTitle, { color: colors.text }]}>New List</Text>
 					<Pressable onPress={handleCreate}>
-						<Text style={[styles.headerBtn, { color: storeName.trim() ? colors.tint : colors.textSecondary }]}>
+						<Text
+							style={[
+								styles.headerBtn,
+								{ color: storeName.trim() ? colors.tint : colors.textSecondary },
+							]}
+						>
 							Create
 						</Text>
 					</Pressable>
@@ -116,7 +131,14 @@ const styles = StyleSheet.create({
 	headerBtn: { fontSize: 16, fontWeight: "500" },
 	headerTitle: { fontSize: 16, fontWeight: "700" },
 	body: { padding: 20 },
-	label: { fontSize: 12, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6, marginTop: 12 },
+	label: {
+		fontSize: 12,
+		fontWeight: "700",
+		textTransform: "uppercase",
+		letterSpacing: 0.5,
+		marginBottom: 6,
+		marginTop: 12,
+	},
 	input: {
 		fontSize: 16,
 		borderWidth: 1,

@@ -1,11 +1,10 @@
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Stack, router } from "expo-router";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
-import { useAuthStore } from "@/stores/auth";
+import Colors from "@/constants/Colors";
 import { useCalendarStatus } from "@/lib/calendar";
-import { api } from "@/lib/api";
+import { useAuthStore } from "@/stores/auth";
 
 export default function SettingsScreen() {
 	const colorScheme = useColorScheme();
@@ -34,23 +33,34 @@ export default function SettingsScreen() {
 				{/* Profile */}
 				<View style={[styles.section, { borderBottomColor: colors.border }]}>
 					<Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Profile</Text>
-					<View style={[styles.profileCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+					<View
+						style={[
+							styles.profileCard,
+							{ backgroundColor: colors.surface, borderColor: colors.border },
+						]}
+					>
 						<View style={[styles.avatar, { backgroundColor: colors.tint }]}>
-							<Text style={styles.avatarText}>
-								{(user?.name || "U").charAt(0).toUpperCase()}
-							</Text>
+							<Text style={styles.avatarText}>{(user?.name || "U").charAt(0).toUpperCase()}</Text>
 						</View>
 						<View style={styles.profileInfo}>
-							<Text style={[styles.profileName, { color: colors.text }]}>{user?.name || "User"}</Text>
-							<Text style={[styles.profileEmail, { color: colors.textSecondary }]}>{user?.email || ""}</Text>
+							<Text style={[styles.profileName, { color: colors.text }]}>
+								{user?.name || "User"}
+							</Text>
+							<Text style={[styles.profileEmail, { color: colors.textSecondary }]}>
+								{user?.email || ""}
+							</Text>
 						</View>
 					</View>
 				</View>
 
 				{/* Connected Accounts */}
 				<View style={[styles.section, { borderBottomColor: colors.border }]}>
-					<Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Connected Accounts</Text>
-					<View style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+					<Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+						Connected Accounts
+					</Text>
+					<View
+						style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}
+					>
 						<Text style={[styles.rowLabel, { color: colors.text }]}>Google Calendar</Text>
 						<View
 							style={[
@@ -73,11 +83,15 @@ export default function SettingsScreen() {
 				{/* Preferences */}
 				<View style={[styles.section, { borderBottomColor: colors.border }]}>
 					<Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Preferences</Text>
-					<View style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+					<View
+						style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}
+					>
 						<Text style={[styles.rowLabel, { color: colors.text }]}>Theme</Text>
 						<Text style={[styles.rowValue, { color: colors.textSecondary }]}>System</Text>
 					</View>
-					<View style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+					<View
+						style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}
+					>
 						<Text style={[styles.rowLabel, { color: colors.text }]}>Default View (Tasks)</Text>
 						<Text style={[styles.rowValue, { color: colors.textSecondary }]}>List</Text>
 					</View>
@@ -86,14 +100,19 @@ export default function SettingsScreen() {
 				{/* About */}
 				<View style={[styles.section, { borderBottomColor: colors.border }]}>
 					<Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>About</Text>
-					<View style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+					<View
+						style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}
+					>
 						<Text style={[styles.rowLabel, { color: colors.text }]}>Version</Text>
 						<Text style={[styles.rowValue, { color: colors.textSecondary }]}>0.0.1</Text>
 					</View>
 				</View>
 
 				{/* Sign Out */}
-				<Pressable style={[styles.signOutBtn, { borderColor: colors.danger }]} onPress={handleLogout}>
+				<Pressable
+					style={[styles.signOutBtn, { borderColor: colors.danger }]}
+					onPress={handleLogout}
+				>
 					<Text style={[styles.signOutText, { color: colors.danger }]}>Sign Out</Text>
 				</Pressable>
 
@@ -106,26 +125,52 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
 	container: { flex: 1 },
 	section: { paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1 },
-	sectionTitle: { fontSize: 12, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10 },
-	profileCard: {
-		flexDirection: "row", alignItems: "center", gap: 14, padding: 16, borderRadius: 12, borderWidth: 1,
+	sectionTitle: {
+		fontSize: 12,
+		fontWeight: "700",
+		textTransform: "uppercase",
+		letterSpacing: 0.5,
+		marginBottom: 10,
 	},
-	avatar: { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center" },
+	profileCard: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 14,
+		padding: 16,
+		borderRadius: 12,
+		borderWidth: 1,
+	},
+	avatar: {
+		width: 48,
+		height: 48,
+		borderRadius: 24,
+		alignItems: "center",
+		justifyContent: "center",
+	},
 	avatarText: { color: "#FFFFFF", fontSize: 20, fontWeight: "700" },
 	profileInfo: { flex: 1 },
 	profileName: { fontSize: 17, fontWeight: "700" },
 	profileEmail: { fontSize: 13, marginTop: 2 },
 	row: {
-		flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-		padding: 14, borderRadius: 10, borderWidth: 1, marginBottom: 6,
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		padding: 14,
+		borderRadius: 10,
+		borderWidth: 1,
+		marginBottom: 6,
 	},
 	rowLabel: { fontSize: 15, fontWeight: "500" },
 	rowValue: { fontSize: 14 },
 	statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6 },
 	statusText: { fontSize: 12, fontWeight: "600" },
 	signOutBtn: {
-		marginHorizontal: 20, marginTop: 24, paddingVertical: 14, borderRadius: 10,
-		borderWidth: 1, alignItems: "center",
+		marginHorizontal: 20,
+		marginTop: 24,
+		paddingVertical: 14,
+		borderRadius: 10,
+		borderWidth: 1,
+		alignItems: "center",
 	},
 	signOutText: { fontSize: 15, fontWeight: "600" },
 });

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
-	Modal,
 	KeyboardAvoidingView,
+	Modal,
 	Platform,
 	Pressable,
 	StyleSheet,
@@ -10,8 +10,8 @@ import {
 	View,
 } from "react-native";
 
-import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 import { useCreateShoppingItem } from "@/lib/shopping";
 
 interface AddItemSheetProps {
@@ -56,7 +56,12 @@ export function AddItemSheet({ visible, listId, onClose }: AddItemSheetProps) {
 	};
 
 	return (
-		<Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+		<Modal
+			visible={visible}
+			animationType="slide"
+			presentationStyle="pageSheet"
+			onRequestClose={onClose}
+		>
 			<KeyboardAvoidingView
 				behavior={Platform.OS === "ios" ? "padding" : "height"}
 				style={[styles.container, { backgroundColor: colors.background }]}
@@ -67,7 +72,12 @@ export function AddItemSheet({ visible, listId, onClose }: AddItemSheetProps) {
 					</Pressable>
 					<Text style={[styles.headerTitle, { color: colors.text }]}>Add Item</Text>
 					<Pressable onPress={handleCreate}>
-						<Text style={[styles.headerBtn, { color: name.trim() ? colors.tint : colors.textSecondary }]}>
+						<Text
+							style={[
+								styles.headerBtn,
+								{ color: name.trim() ? colors.tint : colors.textSecondary },
+							]}
+						>
 							Add
 						</Text>
 					</Pressable>
@@ -159,7 +169,13 @@ const styles = StyleSheet.create({
 	},
 	row: { flexDirection: "row", gap: 12, marginBottom: 12 },
 	halfField: { flex: 1 },
-	label: { fontSize: 12, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 },
+	label: {
+		fontSize: 12,
+		fontWeight: "700",
+		textTransform: "uppercase",
+		letterSpacing: 0.5,
+		marginBottom: 6,
+	},
 	input: {
 		fontSize: 15,
 		borderWidth: 1,

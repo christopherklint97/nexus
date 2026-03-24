@@ -1,22 +1,22 @@
-import { useState, useCallback } from "react";
+import { Stack, router } from "expo-router";
+import { useCallback, useState } from "react";
 import {
+	ActivityIndicator,
 	FlatList,
 	Pressable,
 	StyleSheet,
 	Text,
 	TextInput,
 	View,
-	ActivityIndicator,
 } from "react-native";
-import { Stack, router } from "expo-router";
 import Animated, { FadeIn } from "react-native-reanimated";
 
-import Colors from "@/constants/Colors";
-import { useColorScheme } from "@/components/useColorScheme";
-import { useWorkspaceStore } from "@/stores/workspace";
-import { useNotesQuery, useFoldersQuery, useCreateNote } from "@/lib/notes";
-import type { Note, Folder } from "@/lib/notes";
 import { NoteCard } from "@/components/notes/NoteCard";
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
+import { useCreateNote, useFoldersQuery, useNotesQuery } from "@/lib/notes";
+import type { Note } from "@/lib/notes";
+import { useWorkspaceStore } from "@/stores/workspace";
 
 export default function NotesScreen() {
 	const colorScheme = useColorScheme();
@@ -77,7 +77,10 @@ export default function NotesScreen() {
 				{/* Search bar */}
 				<View style={[styles.searchBar, { borderBottomColor: colors.border }]}>
 					<TextInput
-						style={[styles.searchInput, { color: colors.text, backgroundColor: colors.surface, borderColor: colors.border }]}
+						style={[
+							styles.searchInput,
+							{ color: colors.text, backgroundColor: colors.surface, borderColor: colors.border },
+						]}
 						value={search}
 						onChangeText={setSearch}
 						placeholder="Search notes..."
@@ -98,7 +101,12 @@ export default function NotesScreen() {
 							]}
 							onPress={() => setActiveFolderId(undefined)}
 						>
-							<Text style={[styles.folderChipText, { color: !activeFolderId ? colors.tint : colors.textSecondary }]}>
+							<Text
+								style={[
+									styles.folderChipText,
+									{ color: !activeFolderId ? colors.tint : colors.textSecondary },
+								]}
+							>
 								All
 							</Text>
 						</Pressable>
@@ -108,11 +116,14 @@ export default function NotesScreen() {
 								style={[
 									styles.folderChip,
 									{
-										backgroundColor: activeFolderId === folder.id ? colors.tint + "15" : "transparent",
+										backgroundColor:
+											activeFolderId === folder.id ? colors.tint + "15" : "transparent",
 										borderColor: activeFolderId === folder.id ? colors.tint : colors.border,
 									},
 								]}
-								onPress={() => setActiveFolderId(activeFolderId === folder.id ? undefined : folder.id)}
+								onPress={() =>
+									setActiveFolderId(activeFolderId === folder.id ? undefined : folder.id)
+								}
 							>
 								<Text
 									style={[
@@ -141,9 +152,13 @@ export default function NotesScreen() {
 								{index === 0 && pinnedNotes.length > 0 && (
 									<Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Pinned</Text>
 								)}
-								{index === pinnedNotes.length && pinnedNotes.length > 0 && regularNotes.length > 0 && (
-									<Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Notes</Text>
-								)}
+								{index === pinnedNotes.length &&
+									pinnedNotes.length > 0 &&
+									regularNotes.length > 0 && (
+										<Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
+											Notes
+										</Text>
+									)}
 								<NoteCard note={item} onPress={handlePressNote} />
 							</Animated.View>
 						)}
@@ -161,7 +176,10 @@ export default function NotesScreen() {
 				)}
 
 				{/* FAB */}
-				<Pressable style={[styles.fab, { backgroundColor: colors.tint }]} onPress={handleCreateNote}>
+				<Pressable
+					style={[styles.fab, { backgroundColor: colors.tint }]}
+					onPress={handleCreateNote}
+				>
 					<Text style={styles.fabIcon}>+</Text>
 				</Pressable>
 			</View>
@@ -173,19 +191,48 @@ const styles = StyleSheet.create({
 	container: { flex: 1 },
 	center: { flex: 1, alignItems: "center", justifyContent: "center" },
 	searchBar: { paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1 },
-	searchInput: { fontSize: 15, borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10 },
-	folderBar: { flexDirection: "row", gap: 8, paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1 },
+	searchInput: {
+		fontSize: 15,
+		borderWidth: 1,
+		borderRadius: 10,
+		paddingHorizontal: 14,
+		paddingVertical: 10,
+	},
+	folderBar: {
+		flexDirection: "row",
+		gap: 8,
+		paddingHorizontal: 16,
+		paddingVertical: 10,
+		borderBottomWidth: 1,
+	},
 	folderChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, borderWidth: 1 },
 	folderChipText: { fontSize: 13, fontWeight: "600" },
-	sectionLabel: { fontSize: 12, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8, marginTop: 4 },
+	sectionLabel: {
+		fontSize: 12,
+		fontWeight: "700",
+		textTransform: "uppercase",
+		letterSpacing: 0.5,
+		marginBottom: 8,
+		marginTop: 4,
+	},
 	list: { padding: 16, paddingBottom: 100 },
 	emptyContainer: { alignItems: "center", paddingTop: 100 },
 	emptyTitle: { fontSize: 18, fontWeight: "700" },
 	emptySubtitle: { fontSize: 14, marginTop: 6 },
 	fab: {
-		position: "absolute", right: 20, bottom: 24, width: 56, height: 56, borderRadius: 28,
-		alignItems: "center", justifyContent: "center",
-		elevation: 4, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4,
+		position: "absolute",
+		right: 20,
+		bottom: 24,
+		width: 56,
+		height: 56,
+		borderRadius: 28,
+		alignItems: "center",
+		justifyContent: "center",
+		elevation: 4,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.2,
+		shadowRadius: 4,
 	},
 	fabIcon: { color: "#FFFFFF", fontSize: 28, fontWeight: "400", marginTop: -2 },
 });

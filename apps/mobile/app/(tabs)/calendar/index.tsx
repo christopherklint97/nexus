@@ -1,28 +1,33 @@
-import { useState, useMemo } from "react";
-import { Pressable, StyleSheet, Text, View, ActivityIndicator, Linking } from "react-native";
 import { Stack } from "expo-router";
+import { useMemo, useState } from "react";
+import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 
-import Colors from "@/constants/Colors";
-import { useColorScheme } from "@/components/useColorScheme";
-import { useWorkspaceStore } from "@/stores/workspace";
-import {
-	useCalendarStatus,
-	useCalendarEvents,
-	startOfMonth,
-	endOfMonth,
-} from "@/lib/calendar";
-import { useTasksQuery } from "@/lib/tasks";
-import { MonthView } from "@/components/calendar/MonthView";
 import { AgendaView } from "@/components/calendar/AgendaView";
 import { CreateEventSheet } from "@/components/calendar/CreateEventSheet";
+import { MonthView } from "@/components/calendar/MonthView";
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 import { api } from "@/lib/api";
+import { endOfMonth, startOfMonth, useCalendarEvents, useCalendarStatus } from "@/lib/calendar";
+import { useTasksQuery } from "@/lib/tasks";
+import { useWorkspaceStore } from "@/stores/workspace";
 
 type ViewMode = "month" | "agenda";
 
 const MONTH_NAMES = [
-	"January", "February", "March", "April", "May", "June",
-	"July", "August", "September", "October", "November", "December",
+	"January",
+	"February",
+	"March",
+	"April",
+	"May",
+	"June",
+	"July",
+	"August",
+	"September",
+	"October",
+	"November",
+	"December",
 ];
 
 export default function CalendarScreen() {
@@ -44,7 +49,11 @@ export default function CalendarScreen() {
 	const { data: calendarStatus } = useCalendarStatus();
 	const isConnected = calendarStatus?.connected ?? false;
 
-	const { data: events = [], isLoading: eventsLoading } = useCalendarEvents(timeMin, timeMax, isConnected);
+	const { data: events = [], isLoading: eventsLoading } = useCalendarEvents(
+		timeMin,
+		timeMax,
+		isConnected,
+	);
 
 	const { data: tasks = [] } = useTasksQuery({
 		workspaceId: workspaceId || "",
@@ -109,11 +118,20 @@ export default function CalendarScreen() {
 			<View style={[styles.container, { backgroundColor: colors.background }]}>
 				{/* Connect prompt */}
 				{!isConnected && (
-					<Animated.View entering={FadeIn.duration(300)} style={[styles.connectBanner, { backgroundColor: colors.tint + "10", borderColor: colors.tint + "30" }]}>
+					<Animated.View
+						entering={FadeIn.duration(300)}
+						style={[
+							styles.connectBanner,
+							{ backgroundColor: colors.tint + "10", borderColor: colors.tint + "30" },
+						]}
+					>
 						<Text style={[styles.connectText, { color: colors.text }]}>
 							Connect Google Calendar to see your events
 						</Text>
-						<Pressable style={[styles.connectBtn, { backgroundColor: colors.tint }]} onPress={handleConnectGoogle}>
+						<Pressable
+							style={[styles.connectBtn, { backgroundColor: colors.tint }]}
+							onPress={handleConnectGoogle}
+						>
 							<Text style={styles.connectBtnText}>Connect</Text>
 						</Pressable>
 					</Animated.View>
@@ -149,19 +167,11 @@ export default function CalendarScreen() {
 							taskDueDates={taskDueDates}
 						/>
 						<View style={[styles.agendaDivider, { borderTopColor: colors.border }]}>
-							<AgendaView
-								date={selectedDate}
-								events={events}
-								tasks={tasks}
-							/>
+							<AgendaView date={selectedDate} events={events} tasks={tasks} />
 						</View>
 					</View>
 				) : (
-					<AgendaView
-						date={selectedDate}
-						events={events}
-						tasks={tasks}
-					/>
+					<AgendaView date={selectedDate} events={events} tasks={tasks} />
 				)}
 
 				{/* FAB */}
@@ -217,9 +227,19 @@ const styles = StyleSheet.create({
 	monthContent: { flex: 1 },
 	agendaDivider: { flex: 1, borderTopWidth: 1, marginTop: 8 },
 	fab: {
-		position: "absolute", right: 20, bottom: 24, width: 56, height: 56, borderRadius: 28,
-		alignItems: "center", justifyContent: "center",
-		elevation: 4, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4,
+		position: "absolute",
+		right: 20,
+		bottom: 24,
+		width: 56,
+		height: 56,
+		borderRadius: 28,
+		alignItems: "center",
+		justifyContent: "center",
+		elevation: 4,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.2,
+		shadowRadius: 4,
 	},
 	fabIcon: { color: "#FFFFFF", fontSize: 28, fontWeight: "400", marginTop: -2 },
 });

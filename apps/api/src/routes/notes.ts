@@ -1,9 +1,9 @@
-import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { and, eq, isNull, asc, desc, sql } from "drizzle-orm";
-import { z } from "zod";
-import { notes, folders, documents } from "@nexus/db/schema";
+import { documents, folders, notes } from "@nexus/db/schema";
 import { createNoteSchema } from "@nexus/shared/validators";
+import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
+import { Hono } from "hono";
+import { z } from "zod";
 import { db } from "../lib/db.js";
 import { authMiddleware } from "../middleware/auth.js";
 
@@ -38,7 +38,14 @@ notesRouter.post("/folders", zValidator("json", folderSchema), async (c) => {
 	const id = crypto.randomUUID();
 	const now = new Date().toISOString();
 	db.insert(folders)
-		.values({ id, name: input.name, parentFolderId: input.parentFolderId || null, workspaceId: input.workspaceId, createdAt: now, updatedAt: now })
+		.values({
+			id,
+			name: input.name,
+			parentFolderId: input.parentFolderId || null,
+			workspaceId: input.workspaceId,
+			createdAt: now,
+			updatedAt: now,
+		})
 		.run();
 	const folder = db.select().from(folders).where(eq(folders.id, id)).get();
 	return c.json({ data: folder }, 201);
@@ -46,7 +53,13 @@ notesRouter.post("/folders", zValidator("json", folderSchema), async (c) => {
 
 notesRouter.patch(
 	"/folders/:id",
-	zValidator("json", z.object({ name: z.string().min(1).max(200).optional(), parentFolderId: z.string().uuid().nullable().optional() })),
+	zValidator(
+		"json",
+		z.object({
+			name: z.string().min(1).max(200).optional(),
+			parentFolderId: z.string().uuid().nullable().optional(),
+		}),
+	),
 	async (c) => {
 		const id = c.req.param("id");
 		const input = c.req.valid("json");
@@ -88,7 +101,7 @@ notesRouter.get("/", zValidator("query", noteQuerySchema), async (c) => {
 			           highlight(notes_fts, 1, '<b>', '</b>') as content_highlight,
 			           rank
 			    FROM notes_fts
-			    WHERE notes_fts MATCH ${search.trim() + '*'}
+			    WHERE notes_fts MATCH ${search.trim() + "*"}
 			    ORDER BY rank
 			    LIMIT 50`,
 		) as Array<{ rowid: number; title_highlight: string; content_highlight: string; rank: number }>;
@@ -230,7 +243,8 @@ notesRouter.patch(
 
 		const updates: Record<string, unknown> = { updatedAt: new Date().toISOString() };
 		if (input.title !== undefined) updates.title = input.title;
-		if (input.contentBlocks !== undefined) updates.contentBlocksJson = JSON.stringify(input.contentBlocks);
+		if (input.contentBlocks !== undefined)
+			updates.contentBlocksJson = JSON.stringify(input.contentBlocks);
 		if (input.folderId !== undefined) updates.folderId = input.folderId;
 		if (input.isPinned !== undefined) updates.isPinned = input.isPinned;
 
@@ -346,12 +360,19 @@ function extractTextFromBlocks(contentBlocksJson: string): string {
 		const blocks = JSON.parse(contentBlocksJson);
 		if (!Array.isArray(blocks)) return "";
 		return blocks
-			.map((block: { type: string; content?: string; text?: string; items?: Array<{ text: string }> }) => {
-				if (block.content) return block.content;
-				if (block.text) return block.text;
-				if (block.items) return block.items.map((i) => i.text).join(" ");
-				return "";
-			})
+			.map(
+				(block: {
+					type: string;
+					content?: string;
+					text?: string;
+					items?: Array<{ text: string }>;
+				}) => {
+					if (block.content) return block.content;
+					if (block.text) return block.text;
+					if (block.items) return block.items.map((i) => i.text).join(" ");
+					return "";
+				},
+			)
 			.join(" ");
 	} catch {
 		return "";

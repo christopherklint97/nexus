@@ -1,6 +1,5 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { baseColumns } from "./helpers.js";
-import { users } from "./users.js";
 import { workspaces } from "./users.js";
 
 export const tasks = sqliteTable("tasks", {

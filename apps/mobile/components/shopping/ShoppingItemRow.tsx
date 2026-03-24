@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn, Layout } from "react-native-reanimated";
 
-import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 import type { ShoppingItem } from "@/lib/shopping";
 
 interface ShoppingItemRowProps {
@@ -16,9 +16,7 @@ export function ShoppingItemRow({ item, onToggle, onDelete }: ShoppingItemRowPro
 	const colors = Colors[colorScheme];
 
 	const priceDisplay =
-		item.estimatedPrice != null
-			? `$${(item.estimatedPrice * item.quantity).toFixed(2)}`
-			: null;
+		item.estimatedPrice != null ? `$${(item.estimatedPrice * item.quantity).toFixed(2)}` : null;
 
 	return (
 		<Animated.View entering={FadeIn.duration(200)} layout={Layout.springify()}>

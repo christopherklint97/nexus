@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
-	Modal,
 	KeyboardAvoidingView,
+	Modal,
 	Platform,
 	Pressable,
 	StyleSheet,
@@ -10,10 +10,10 @@ import {
 	View,
 } from "react-native";
 
-import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
-import { PriorityBadge } from "./PriorityBadge";
+import Colors from "@/constants/Colors";
 import { useCreateTask } from "@/lib/tasks";
+import { PriorityBadge } from "./PriorityBadge";
 
 interface QuickAddTaskProps {
 	visible: boolean;

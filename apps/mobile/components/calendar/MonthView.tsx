@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
-import { getDaysInMonth, isSameDay, EVENT_COLORS } from "@/lib/calendar";
+import Colors from "@/constants/Colors";
+import { EVENT_COLORS, getDaysInMonth, isSameDay } from "@/lib/calendar";
 import type { CalendarEvent } from "@/lib/calendar";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -16,7 +16,14 @@ interface MonthViewProps {
 	taskDueDates?: Date[];
 }
 
-export function MonthView({ year, month, events, selectedDate, onSelectDate, taskDueDates = [] }: MonthViewProps) {
+export function MonthView({
+	year,
+	month,
+	events,
+	selectedDate,
+	onSelectDate,
+	taskDueDates = [],
+}: MonthViewProps) {
 	const colorScheme = useColorScheme();
 	const colors = Colors[colorScheme];
 	const today = new Date();
@@ -56,10 +63,7 @@ export function MonthView({ year, month, events, selectedDate, onSelectDate, tas
 					return (
 						<Pressable
 							key={idx}
-							style={[
-								styles.dayCell,
-								isSelected && { backgroundColor: colors.tint + "15" },
-							]}
+							style={[styles.dayCell, isSelected && { backgroundColor: colors.tint + "15" }]}
 							onPress={() => onSelectDate(day)}
 						>
 							<View style={[styles.dayNumber, isToday && { backgroundColor: colors.tint }]}>
@@ -81,7 +85,11 @@ export function MonthView({ year, month, events, selectedDate, onSelectDate, tas
 										key={i}
 										style={[
 											styles.dot,
-											{ backgroundColor: ev.colorId ? (EVENT_COLORS[ev.colorId] || colors.tint) : colors.tint },
+											{
+												backgroundColor: ev.colorId
+													? EVENT_COLORS[ev.colorId] || colors.tint
+													: colors.tint,
+											},
 										]}
 									/>
 								))}

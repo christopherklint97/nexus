@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { Stack, router, useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	Alert,
 	KeyboardAvoidingView,
@@ -8,15 +9,13 @@ import {
 	Text,
 	TextInput,
 	View,
-	ScrollView,
 } from "react-native";
-import { Stack, useLocalSearchParams, router } from "expo-router";
 
-import Colors from "@/constants/Colors";
-import { useColorScheme } from "@/components/useColorScheme";
-import { useNoteDetailQuery, useUpdateNote, useDeleteNote, parseBlocks } from "@/lib/notes";
-import type { NoteBlock } from "@/lib/notes";
 import { BlockEditor } from "@/components/notes/BlockEditor";
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
+import { parseBlocks, useDeleteNote, useNoteDetailQuery, useUpdateNote } from "@/lib/notes";
+import type { NoteBlock } from "@/lib/notes";
 
 export default function NoteEditorScreen() {
 	const { noteId } = useLocalSearchParams<{ noteId: string }>();
@@ -121,12 +120,11 @@ export default function NoteEditorScreen() {
 				{/* Backlinks */}
 				{note?.backlinks && note.backlinks.length > 0 && (
 					<View style={[styles.backlinks, { borderColor: colors.border }]}>
-						<Text style={[styles.backlinksLabel, { color: colors.textSecondary }]}>Referenced by</Text>
+						<Text style={[styles.backlinksLabel, { color: colors.textSecondary }]}>
+							Referenced by
+						</Text>
 						{note.backlinks.map((bl) => (
-							<Pressable
-								key={bl.id}
-								onPress={() => router.push(`/(tabs)/notes/${bl.id}`)}
-							>
+							<Pressable key={bl.id} onPress={() => router.push(`/(tabs)/notes/${bl.id}`)}>
 								<Text style={[styles.backlinkItem, { color: colors.tint }]}>{bl.title}</Text>
 							</Pressable>
 						))}
@@ -187,7 +185,13 @@ const styles = StyleSheet.create({
 		paddingVertical: 8,
 		marginBottom: 8,
 	},
-	backlinksLabel: { fontSize: 11, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 },
+	backlinksLabel: {
+		fontSize: 11,
+		fontWeight: "700",
+		textTransform: "uppercase",
+		letterSpacing: 0.5,
+		marginBottom: 4,
+	},
 	backlinkItem: { fontSize: 13, fontWeight: "500", paddingVertical: 2 },
 	docsSection: {
 		borderBottomWidth: 1,
@@ -195,7 +199,13 @@ const styles = StyleSheet.create({
 		paddingBottom: 8,
 		marginBottom: 8,
 	},
-	docsLabel: { fontSize: 11, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 },
+	docsLabel: {
+		fontSize: 11,
+		fontWeight: "700",
+		textTransform: "uppercase",
+		letterSpacing: 0.5,
+		marginBottom: 4,
+	},
 	docRow: {
 		flexDirection: "row",
 		justifyContent: "space-between",

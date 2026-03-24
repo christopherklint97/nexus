@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { useState } from "react";
 import {
 	KeyboardAvoidingView,
@@ -8,10 +9,9 @@ import {
 	TextInput,
 	View,
 } from "react-native";
-import { router } from "expo-router";
 
-import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 
 export default function RegisterScreen() {
 	const colorScheme = useColorScheme();

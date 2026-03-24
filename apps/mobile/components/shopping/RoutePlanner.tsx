@@ -1,18 +1,18 @@
 import { useState } from "react";
 import {
+	ActivityIndicator,
 	Modal,
 	Pressable,
 	ScrollView,
 	StyleSheet,
 	Text,
 	View,
-	ActivityIndicator,
 } from "react-native";
 
-import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 import { useOptimizeRoute } from "@/lib/shopping";
-import type { ShoppingList, OptimizedRoute } from "@/lib/shopping";
+import type { OptimizedRoute, ShoppingList } from "@/lib/shopping";
 
 interface RoutePlannerProps {
 	visible: boolean;
@@ -41,10 +41,7 @@ export function RoutePlanner({ visible, lists, onClose }: RoutePlannerProps) {
 
 	const handleOptimize = () => {
 		if (selectedIds.size === 0) return;
-		optimizeRoute.mutate(
-			{ listIds: [...selectedIds] },
-			{ onSuccess: (data) => setRoute(data) },
-		);
+		optimizeRoute.mutate({ listIds: [...selectedIds] }, { onSuccess: (data) => setRoute(data) });
 	};
 
 	const handleClose = () => {
@@ -54,7 +51,12 @@ export function RoutePlanner({ visible, lists, onClose }: RoutePlannerProps) {
 	};
 
 	return (
-		<Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={handleClose}>
+		<Modal
+			visible={visible}
+			animationType="slide"
+			presentationStyle="pageSheet"
+			onRequestClose={handleClose}
+		>
 			<View style={[styles.container, { backgroundColor: colors.background }]}>
 				<View style={[styles.header, { borderBottomColor: colors.border }]}>
 					<Pressable onPress={handleClose}>
@@ -127,7 +129,12 @@ export function RoutePlanner({ visible, lists, onClose }: RoutePlannerProps) {
 							</Text>
 
 							{/* Summary */}
-							<View style={[styles.summaryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+							<View
+								style={[
+									styles.summaryCard,
+									{ backgroundColor: colors.surface, borderColor: colors.border },
+								]}
+							>
 								<View style={styles.summaryRow}>
 									<Text style={[styles.summaryValue, { color: colors.text }]}>
 										{route.summary.storeCount}
@@ -154,7 +161,13 @@ export function RoutePlanner({ visible, lists, onClose }: RoutePlannerProps) {
 									<View style={[styles.stopNumber, { backgroundColor: colors.tint }]}>
 										<Text style={styles.stopNumberText}>{stop.order}</Text>
 									</View>
-									<View style={[styles.stopLine, idx === route.stops.length - 1 && { backgroundColor: "transparent" }, { backgroundColor: colors.border }]} />
+									<View
+										style={[
+											styles.stopLine,
+											idx === route.stops.length - 1 && { backgroundColor: "transparent" },
+											{ backgroundColor: colors.border },
+										]}
+									/>
 									<View style={styles.stopInfo}>
 										<Text style={[styles.stopName, { color: colors.text }]}>{stop.storeName}</Text>
 										{stop.storeAddress && (
@@ -189,7 +202,14 @@ const styles = StyleSheet.create({
 	headerBtn: { fontSize: 16, fontWeight: "500" },
 	headerTitle: { fontSize: 16, fontWeight: "700" },
 	body: { padding: 20 },
-	sectionTitle: { fontSize: 12, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 10, marginTop: 4 },
+	sectionTitle: {
+		fontSize: 12,
+		fontWeight: "700",
+		textTransform: "uppercase",
+		letterSpacing: 0.5,
+		marginBottom: 10,
+		marginTop: 4,
+	},
 	storeRow: {
 		flexDirection: "row",
 		alignItems: "center",

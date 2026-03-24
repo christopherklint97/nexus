@@ -9,6 +9,7 @@ A cross-platform personal assistant Progressive Web App that unifies task manage
 - **Command Center** — Dashboard showing today's agenda, active tasks, shopping trips, and pinned notes with global search
 - **Tasks** — Kanban board & list views, subtasks, recurring tasks, labels, priority levels (P1-P4), natural language dates
 - **Smart Shopping** — Per-store lists with aisle grouping, check-off with running totals, nearest-neighbor route optimization
+- **Recipes** — Structured ingredients & instructions, serving scaler, one-tap add-to-shopping-list, cuisine/difficulty/tag filtering
 - **Notes** — Block-based editor (headings, checklists, code, quotes, callouts), slash commands, markdown shortcuts, full-text search, backlinks
 - **Calendar** — Google Calendar integration with month/agenda views, event creation, unified timeline with tasks
 - **Sync** — Offline-first architecture with push/pull sync and last-write-wins conflict resolution
@@ -62,11 +63,11 @@ nexus/
 │   │   └── stores/      # Zustand state stores
 │   └── api/             # Hono + Bun backend
 │       └── src/
-│           ├── routes/  # auth, tasks, shopping, notes, calendar, sync, search
+│           ├── routes/  # auth, tasks, shopping, recipes, notes, calendar, sync, search
 │           ├── lib/     # db, auth helpers
 │           └── middleware/
 ├── packages/
-│   ├── db/              # Drizzle ORM schema (13 tables)
+│   ├── db/              # Drizzle ORM schema (14 tables)
 │   ├── shared/          # Zod validators, types, constants
 │   ├── ui/              # Shared component library
 │   ├── sync/            # Sync engine (stub)

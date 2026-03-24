@@ -3,9 +3,7 @@ import * as jose from "jose";
 if (!process.env.JWT_SECRET) {
 	console.warn("WARNING: JWT_SECRET not set. Using insecure default for development only.");
 }
-const JWT_SECRET = new TextEncoder().encode(
-	process.env.JWT_SECRET || crypto.randomUUID(),
-);
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || crypto.randomUUID());
 const JWT_ISSUER = "nexus-api";
 const ACCESS_TOKEN_EXPIRY = "15m";
 const REFRESH_TOKEN_EXPIRY = "7d";

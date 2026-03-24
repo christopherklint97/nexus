@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { useState } from "react";
 import {
 	FlatList,
@@ -9,18 +10,17 @@ import {
 	TextInput,
 	View,
 } from "react-native";
-import { router } from "expo-router";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
-import Colors from "@/constants/Colors";
-import { useColorScheme } from "@/components/useColorScheme";
-import { useWorkspaceStore } from "@/stores/workspace";
-import { useTasksQuery } from "@/lib/tasks";
-import { useShoppingListsQuery } from "@/lib/shopping";
-import { useNotesQuery } from "@/lib/notes";
-import { useCalendarEvents, useCalendarStatus, isSameDay, formatTime } from "@/lib/calendar";
-import { useGlobalSearch } from "@/lib/search";
 import { PriorityBadge } from "@/components/tasks/PriorityBadge";
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
+import { formatTime, useCalendarEvents, useCalendarStatus } from "@/lib/calendar";
+import { useNotesQuery } from "@/lib/notes";
+import { useGlobalSearch } from "@/lib/search";
+import { useShoppingListsQuery } from "@/lib/shopping";
+import { useTasksQuery } from "@/lib/tasks";
+import { useWorkspaceStore } from "@/stores/workspace";
 
 function getGreeting(): string {
 	const h = new Date().getHours();
@@ -58,16 +58,32 @@ export default function HomeScreen() {
 	const { data: calStatus } = useCalendarStatus();
 	const today = new Date();
 	const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
-	const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59).toISOString();
-	const { data: todayEvents } = useCalendarEvents(todayStart, todayEnd, calStatus?.connected ?? false);
+	const todayEnd = new Date(
+		today.getFullYear(),
+		today.getMonth(),
+		today.getDate(),
+		23,
+		59,
+		59,
+	).toISOString();
+	const { data: todayEvents } = useCalendarEvents(
+		todayStart,
+		todayEnd,
+		calStatus?.connected ?? false,
+	);
 
 	const { data: searchResults } = useGlobalSearch(searchQuery, workspaceId || "");
 
 	const allTasks = [...(activeTasks || []), ...(todoTasks || [])].slice(0, 5);
-	const activeShoppingLists = (shoppingLists || []).filter((l) => l.checkedCount < l.itemCount).slice(0, 3);
+	const activeShoppingLists = (shoppingLists || [])
+		.filter((l) => l.checkedCount < l.itemCount)
+		.slice(0, 3);
 
 	return (
-		<ScrollView style={[styles.container, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false}>
+		<ScrollView
+			style={[styles.container, { backgroundColor: colors.background }]}
+			showsVerticalScrollIndicator={false}
+		>
 			{/* Header */}
 			<View style={styles.header}>
 				<Text style={[styles.greeting, { color: colors.textSecondary }]}>{getGreeting()}</Text>
@@ -79,11 +95,16 @@ export default function HomeScreen() {
 				style={[styles.searchBar, { backgroundColor: colors.surface, borderColor: colors.border }]}
 				onPress={() => setShowSearch(true)}
 			>
-				<Text style={[styles.searchPlaceholder, { color: colors.textSecondary }]}>Search everything...</Text>
+				<Text style={[styles.searchPlaceholder, { color: colors.textSecondary }]}>
+					Search everything...
+				</Text>
 			</Pressable>
 
 			{/* Today's Agenda */}
-			<Animated.View entering={FadeInDown.duration(300).delay(0)} style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+			<Animated.View
+				entering={FadeInDown.duration(300).delay(0)}
+				style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
+			>
 				<Text style={[styles.cardTitle, { color: colors.text }]}>Today's Agenda</Text>
 				{(todayEvents || []).length > 0 ? (
 					(todayEvents || []).slice(0, 4).map((event) => (
@@ -91,7 +112,9 @@ export default function HomeScreen() {
 							<Text style={[styles.agendaTime, { color: colors.textSecondary }]}>
 								{event.allDay ? "All day" : formatTime(event.startDateTime)}
 							</Text>
-							<Text style={[styles.agendaTitle, { color: colors.text }]} numberOfLines={1}>{event.title}</Text>
+							<Text style={[styles.agendaTitle, { color: colors.text }]} numberOfLines={1}>
+								{event.title}
+							</Text>
 						</View>
 					))
 				) : (
@@ -100,7 +123,10 @@ export default function HomeScreen() {
 			</Animated.View>
 
 			{/* Active Tasks */}
-			<Animated.View entering={FadeInDown.duration(300).delay(80)} style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+			<Animated.View
+				entering={FadeInDown.duration(300).delay(80)}
+				style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
+			>
 				<View style={styles.cardHeader}>
 					<Text style={[styles.cardTitle, { color: colors.text }]}>Tasks</Text>
 					<Pressable onPress={() => router.push("/(tabs)/tasks")}>
@@ -114,10 +140,17 @@ export default function HomeScreen() {
 							style={styles.taskRow}
 							onPress={() => router.push("/(tabs)/tasks")}
 						>
-							<Text style={[styles.taskStatus, { color: task.status === "in_progress" ? colors.tint : colors.textSecondary }]}>
+							<Text
+								style={[
+									styles.taskStatus,
+									{ color: task.status === "in_progress" ? colors.tint : colors.textSecondary },
+								]}
+							>
 								{task.status === "in_progress" ? "◐" : "○"}
 							</Text>
-							<Text style={[styles.taskTitle, { color: colors.text }]} numberOfLines={1}>{task.title}</Text>
+							<Text style={[styles.taskTitle, { color: colors.text }]} numberOfLines={1}>
+								{task.title}
+							</Text>
 							<PriorityBadge priority={task.priority} />
 						</Pressable>
 					))
@@ -127,7 +160,10 @@ export default function HomeScreen() {
 			</Animated.View>
 
 			{/* Shopping */}
-			<Animated.View entering={FadeInDown.duration(300).delay(160)} style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+			<Animated.View
+				entering={FadeInDown.duration(300).delay(160)}
+				style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
+			>
 				<View style={styles.cardHeader}>
 					<Text style={[styles.cardTitle, { color: colors.text }]}>Shopping</Text>
 					<Pressable onPress={() => router.push("/(tabs)/shopping")}>
@@ -142,7 +178,9 @@ export default function HomeScreen() {
 							onPress={() => router.push(`/(tabs)/shopping/${list.id}`)}
 						>
 							<View style={[styles.shopIcon, { backgroundColor: colors.tint + "15" }]}>
-								<Text style={[styles.shopIconText, { color: colors.tint }]}>{list.storeName.charAt(0)}</Text>
+								<Text style={[styles.shopIconText, { color: colors.tint }]}>
+									{list.storeName.charAt(0)}
+								</Text>
 							</View>
 							<View style={styles.shopInfo}>
 								<Text style={[styles.shopStore, { color: colors.text }]}>{list.storeName}</Text>
@@ -153,12 +191,17 @@ export default function HomeScreen() {
 						</Pressable>
 					))
 				) : (
-					<Text style={[styles.cardEmpty, { color: colors.textSecondary }]}>No active shopping lists</Text>
+					<Text style={[styles.cardEmpty, { color: colors.textSecondary }]}>
+						No active shopping lists
+					</Text>
 				)}
 			</Animated.View>
 
 			{/* Pinned Notes */}
-			<Animated.View entering={FadeInDown.duration(300).delay(240)} style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+			<Animated.View
+				entering={FadeInDown.duration(300).delay(240)}
+				style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
+			>
 				<View style={styles.cardHeader}>
 					<Text style={[styles.cardTitle, { color: colors.text }]}>Pinned Notes</Text>
 					<Pressable onPress={() => router.push("/(tabs)/notes")}>
@@ -172,20 +215,35 @@ export default function HomeScreen() {
 							style={styles.noteRow}
 							onPress={() => router.push(`/(tabs)/notes/${note.id}`)}
 						>
-							<Text style={[styles.noteTitle, { color: colors.text }]} numberOfLines={1}>📌 {note.title}</Text>
+							<Text style={[styles.noteTitle, { color: colors.text }]} numberOfLines={1}>
+								📌 {note.title}
+							</Text>
 						</Pressable>
 					))
 				) : (
-					<Text style={[styles.cardEmpty, { color: colors.textSecondary }]}>Pin a note to see it here</Text>
+					<Text style={[styles.cardEmpty, { color: colors.textSecondary }]}>
+						Pin a note to see it here
+					</Text>
 				)}
 			</Animated.View>
 
 			<View style={{ height: 40 }} />
 
 			{/* Global Search Modal */}
-			<Modal visible={showSearch} animationType="fade" transparent onRequestClose={() => setShowSearch(false)}>
+			<Modal
+				visible={showSearch}
+				animationType="fade"
+				transparent
+				onRequestClose={() => setShowSearch(false)}
+			>
 				<Pressable style={styles.searchOverlay} onPress={() => setShowSearch(false)}>
-					<View style={[styles.searchModal, { backgroundColor: colors.surface, borderColor: colors.border }]} onStartShouldSetResponder={() => true}>
+					<View
+						style={[
+							styles.searchModal,
+							{ backgroundColor: colors.surface, borderColor: colors.border },
+						]}
+						onStartShouldSetResponder={() => true}
+					>
 						<TextInput
 							style={[styles.searchInput, { color: colors.text, borderColor: colors.border }]}
 							value={searchQuery}
@@ -206,18 +264,30 @@ export default function HomeScreen() {
 											setSearchQuery("");
 											if (item.type === "task") router.push("/(tabs)/tasks");
 											else if (item.type === "note") router.push(`/(tabs)/notes/${item.id}`);
-											else if (item.type === "shopping_list") router.push(`/(tabs)/shopping/${item.id}`);
+											else if (item.type === "shopping_list")
+												router.push(`/(tabs)/shopping/${item.id}`);
 											else router.push("/(tabs)/shopping");
 										}}
 									>
-										<View style={[styles.resultTypeBadge, { backgroundColor: getTypeColor(item.type, colors) + "15" }]}>
-											<Text style={[styles.resultTypeText, { color: getTypeColor(item.type, colors) }]}>
+										<View
+											style={[
+												styles.resultTypeBadge,
+												{ backgroundColor: getTypeColor(item.type, colors) + "15" },
+											]}
+										>
+											<Text
+												style={[styles.resultTypeText, { color: getTypeColor(item.type, colors) }]}
+											>
 												{getTypeLabel(item.type)}
 											</Text>
 										</View>
 										<View style={styles.resultContent}>
-											<Text style={[styles.resultTitle, { color: colors.text }]} numberOfLines={1}>{item.title}</Text>
-											<Text style={[styles.resultSubtitle, { color: colors.textSecondary }]}>{item.subtitle}</Text>
+											<Text style={[styles.resultTitle, { color: colors.text }]} numberOfLines={1}>
+												{item.title}
+											</Text>
+											<Text style={[styles.resultSubtitle, { color: colors.textSecondary }]}>
+												{item.subtitle}
+											</Text>
 										</View>
 									</Pressable>
 								)}
@@ -225,7 +295,9 @@ export default function HomeScreen() {
 							/>
 						)}
 						{searchQuery.length >= 2 && (searchResults || []).length === 0 && (
-							<Text style={[styles.noResults, { color: colors.textSecondary }]}>No results found</Text>
+							<Text style={[styles.noResults, { color: colors.textSecondary }]}>
+								No results found
+							</Text>
 						)}
 					</View>
 				</Pressable>
@@ -236,21 +308,31 @@ export default function HomeScreen() {
 
 function getTypeColor(type: string, colors: (typeof Colors)["light"]): string {
 	switch (type) {
-		case "task": return colors.tint;
-		case "note": return colors.success;
-		case "shopping_list": return colors.warning;
-		case "shopping_item": return colors.warning;
-		default: return colors.textSecondary;
+		case "task":
+			return colors.tint;
+		case "note":
+			return colors.success;
+		case "shopping_list":
+			return colors.warning;
+		case "shopping_item":
+			return colors.warning;
+		default:
+			return colors.textSecondary;
 	}
 }
 
 function getTypeLabel(type: string): string {
 	switch (type) {
-		case "task": return "Task";
-		case "note": return "Note";
-		case "shopping_list": return "List";
-		case "shopping_item": return "Item";
-		default: return type;
+		case "task":
+			return "Task";
+		case "note":
+			return "Note";
+		case "shopping_list":
+			return "List";
+		case "shopping_item":
+			return "Item";
+		default:
+			return type;
 	}
 }
 
@@ -260,12 +342,21 @@ const styles = StyleSheet.create({
 	greeting: { fontSize: 14, fontWeight: "500" },
 	title: { fontSize: 28, fontWeight: "800", marginTop: 2 },
 	searchBar: {
-		marginHorizontal: 20, marginTop: 12, paddingHorizontal: 16, paddingVertical: 12,
-		borderRadius: 10, borderWidth: 1,
+		marginHorizontal: 20,
+		marginTop: 12,
+		paddingHorizontal: 16,
+		paddingVertical: 12,
+		borderRadius: 10,
+		borderWidth: 1,
 	},
 	searchPlaceholder: { fontSize: 15 },
 	card: { marginHorizontal: 20, marginTop: 16, padding: 16, borderRadius: 12, borderWidth: 1 },
-	cardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
+	cardHeader: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		marginBottom: 8,
+	},
 	cardTitle: { fontSize: 16, fontWeight: "700" },
 	cardEmpty: { fontSize: 14, paddingVertical: 4 },
 	viewAll: { fontSize: 13, fontWeight: "600" },
@@ -279,7 +370,13 @@ const styles = StyleSheet.create({
 	taskTitle: { flex: 1, fontSize: 14, fontWeight: "500" },
 	// Shopping
 	shopRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 6 },
-	shopIcon: { width: 32, height: 32, borderRadius: 8, alignItems: "center", justifyContent: "center" },
+	shopIcon: {
+		width: 32,
+		height: 32,
+		borderRadius: 8,
+		alignItems: "center",
+		justifyContent: "center",
+	},
 	shopIconText: { fontSize: 14, fontWeight: "700" },
 	shopInfo: { flex: 1 },
 	shopStore: { fontSize: 14, fontWeight: "600" },
@@ -288,11 +385,35 @@ const styles = StyleSheet.create({
 	noteRow: { paddingVertical: 6 },
 	noteTitle: { fontSize: 14, fontWeight: "500" },
 	// Search modal
-	searchOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "flex-start", paddingTop: 80 },
-	searchModal: { marginHorizontal: 20, borderRadius: 12, borderWidth: 1, padding: 16, maxHeight: 500 },
-	searchInput: { fontSize: 16, borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 8 },
+	searchOverlay: {
+		flex: 1,
+		backgroundColor: "rgba(0,0,0,0.4)",
+		justifyContent: "flex-start",
+		paddingTop: 80,
+	},
+	searchModal: {
+		marginHorizontal: 20,
+		borderRadius: 12,
+		borderWidth: 1,
+		padding: 16,
+		maxHeight: 500,
+	},
+	searchInput: {
+		fontSize: 16,
+		borderWidth: 1,
+		borderRadius: 10,
+		paddingHorizontal: 14,
+		paddingVertical: 10,
+		marginBottom: 8,
+	},
 	searchResults: { maxHeight: 350 },
-	searchResult: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10, borderBottomWidth: 0.5 },
+	searchResult: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 10,
+		paddingVertical: 10,
+		borderBottomWidth: 0.5,
+	},
 	resultTypeBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
 	resultTypeText: { fontSize: 11, fontWeight: "700" },
 	resultContent: { flex: 1 },

@@ -1,8 +1,8 @@
-import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { and, eq, isNull } from "drizzle-orm";
-import { z } from "zod";
 import { calendarConnections } from "@nexus/db/schema";
+import { and, eq, isNull } from "drizzle-orm";
+import { Hono } from "hono";
+import { z } from "zod";
 import { db } from "../lib/db.js";
 import { authMiddleware } from "../middleware/auth.js";
 
@@ -11,7 +11,8 @@ calendar.use("*", authMiddleware);
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
-const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || "http://localhost:3000/api/calendar/google/callback";
+const GOOGLE_REDIRECT_URI =
+	process.env.GOOGLE_REDIRECT_URI || "http://localhost:3000/api/calendar/google/callback";
 const GOOGLE_CALENDAR_API = "https://www.googleapis.com/calendar/v3";
 
 // In-memory cache for calendar events (TTL: 5 min)
@@ -65,7 +66,10 @@ calendar.get("/google/callback", async (c) => {
 
 	if (!tokenRes.ok) {
 		const err = await tokenRes.text();
-		return c.json({ error: { message: "Token exchange failed", code: "OAUTH_ERROR", details: err } }, 400);
+		return c.json(
+			{ error: { message: "Token exchange failed", code: "OAUTH_ERROR", details: err } },
+			400,
+		);
 	}
 
 	const tokens = (await tokenRes.json()) as {
@@ -117,7 +121,13 @@ calendar.get("/status", (c) => {
 	const conn = db
 		.select()
 		.from(calendarConnections)
-		.where(and(eq(calendarConnections.userId, userId), eq(calendarConnections.provider, "google"), isNull(calendarConnections.deletedAt)))
+		.where(
+			and(
+				eq(calendarConnections.userId, userId),
+				eq(calendarConnections.provider, "google"),
+				isNull(calendarConnections.deletedAt),
+			),
+		)
 		.get();
 
 	return c.json({ data: { connected: !!conn } });
@@ -156,7 +166,10 @@ calendar.get("/events", zValidator("query", eventsQuerySchema), async (c) => {
 
 	const accessToken = await getAccessToken(userId);
 	if (!accessToken) {
-		return c.json({ error: { message: "Google Calendar not connected", code: "NOT_CONNECTED" } }, 401);
+		return c.json(
+			{ error: { message: "Google Calendar not connected", code: "NOT_CONNECTED" } },
+			401,
+		);
 	}
 
 	const params = new URLSearchParams({
@@ -167,17 +180,23 @@ calendar.get("/events", zValidator("query", eventsQuerySchema), async (c) => {
 		orderBy: "startTime",
 	});
 
-	const res = await fetch(`${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(calendarId)}/events?${params}`, {
-		headers: { Authorization: `Bearer ${accessToken}` },
-	});
+	const res = await fetch(
+		`${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(calendarId)}/events?${params}`,
+		{
+			headers: { Authorization: `Bearer ${accessToken}` },
+		},
+	);
 
 	if (res.status === 401) {
 		// Try to refresh token
 		const newToken = await refreshAccessToken(userId);
 		if (newToken) {
-			const retryRes = await fetch(`${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(calendarId)}/events?${params}`, {
-				headers: { Authorization: `Bearer ${newToken}` },
-			});
+			const retryRes = await fetch(
+				`${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(calendarId)}/events?${params}`,
+				{
+					headers: { Authorization: `Bearer ${newToken}` },
+				},
+			);
 			if (retryRes.ok) {
 				const data = await retryRes.json();
 				const events = mapGoogleEvents(data);
@@ -185,7 +204,10 @@ calendar.get("/events", zValidator("query", eventsQuerySchema), async (c) => {
 				return c.json({ data: events });
 			}
 		}
-		return c.json({ error: { message: "Google Calendar auth expired", code: "AUTH_EXPIRED" } }, 401);
+		return c.json(
+			{ error: { message: "Google Calendar auth expired", code: "AUTH_EXPIRED" } },
+			401,
+		);
 	}
 
 	if (!res.ok) {
@@ -218,7 +240,10 @@ calendar.post(
 
 		const accessToken = await getAccessToken(userId);
 		if (!accessToken) {
-			return c.json({ error: { message: "Google Calendar not connected", code: "NOT_CONNECTED" } }, 401);
+			return c.json(
+				{ error: { message: "Google Calendar not connected", code: "NOT_CONNECTED" } },
+				401,
+			);
 		}
 
 		const body = {
@@ -242,7 +267,10 @@ calendar.post(
 		);
 
 		if (!res.ok) {
-			return c.json({ error: { message: "Failed to create event", code: "GOOGLE_API_ERROR" } }, 502);
+			return c.json(
+				{ error: { message: "Failed to create event", code: "GOOGLE_API_ERROR" } },
+				502,
+			);
 		}
 
 		// Invalidate cache
@@ -294,7 +322,10 @@ calendar.patch(
 		);
 
 		if (!res.ok) {
-			return c.json({ error: { message: "Failed to update event", code: "GOOGLE_API_ERROR" } }, 502);
+			return c.json(
+				{ error: { message: "Failed to update event", code: "GOOGLE_API_ERROR" } },
+				502,
+			);
 		}
 
 		invalidateUserCache(userId);
@@ -304,28 +335,35 @@ calendar.patch(
 );
 
 // Delete event
-calendar.delete("/events/:eventId", zValidator("query", z.object({ calendarId: z.string().default("primary") })), async (c) => {
-	const userId = c.get("userId");
-	const eventId = c.req.param("eventId");
-	const { calendarId } = c.req.valid("query");
+calendar.delete(
+	"/events/:eventId",
+	zValidator("query", z.object({ calendarId: z.string().default("primary") })),
+	async (c) => {
+		const userId = c.get("userId");
+		const eventId = c.req.param("eventId");
+		const { calendarId } = c.req.valid("query");
 
-	const accessToken = await getAccessToken(userId);
-	if (!accessToken) {
-		return c.json({ error: { message: "Not connected", code: "NOT_CONNECTED" } }, 401);
-	}
+		const accessToken = await getAccessToken(userId);
+		if (!accessToken) {
+			return c.json({ error: { message: "Not connected", code: "NOT_CONNECTED" } }, 401);
+		}
 
-	const res = await fetch(
-		`${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`,
-		{ method: "DELETE", headers: { Authorization: `Bearer ${accessToken}` } },
-	);
+		const res = await fetch(
+			`${GOOGLE_CALENDAR_API}/calendars/${encodeURIComponent(calendarId)}/events/${eventId}`,
+			{ method: "DELETE", headers: { Authorization: `Bearer ${accessToken}` } },
+		);
 
-	if (!res.ok && res.status !== 204) {
-		return c.json({ error: { message: "Failed to delete event", code: "GOOGLE_API_ERROR" } }, 502);
-	}
+		if (!res.ok && res.status !== 204) {
+			return c.json(
+				{ error: { message: "Failed to delete event", code: "GOOGLE_API_ERROR" } },
+				502,
+			);
+		}
 
-	invalidateUserCache(userId);
-	return c.json({ data: { id: eventId, deleted: true } });
-});
+		invalidateUserCache(userId);
+		return c.json({ data: { id: eventId, deleted: true } });
+	},
+);
 
 // ─── Helpers ───
 
@@ -333,7 +371,13 @@ async function getAccessToken(userId: string): Promise<string | null> {
 	const conn = db
 		.select()
 		.from(calendarConnections)
-		.where(and(eq(calendarConnections.userId, userId), eq(calendarConnections.provider, "google"), isNull(calendarConnections.deletedAt)))
+		.where(
+			and(
+				eq(calendarConnections.userId, userId),
+				eq(calendarConnections.provider, "google"),
+				isNull(calendarConnections.deletedAt),
+			),
+		)
 		.get();
 	return conn?.accessTokenEncrypted || null;
 }
@@ -342,7 +386,13 @@ async function refreshAccessToken(userId: string): Promise<string | null> {
 	const conn = db
 		.select()
 		.from(calendarConnections)
-		.where(and(eq(calendarConnections.userId, userId), eq(calendarConnections.provider, "google"), isNull(calendarConnections.deletedAt)))
+		.where(
+			and(
+				eq(calendarConnections.userId, userId),
+				eq(calendarConnections.provider, "google"),
+				isNull(calendarConnections.deletedAt),
+			),
+		)
 		.get();
 
 	if (!conn?.refreshTokenEncrypted) return null;
@@ -401,9 +451,7 @@ function mapSingleEvent(event: GoogleEvent) {
 }
 
 function mapGoogleEvents(data: { items?: GoogleEvent[] }) {
-	return (data.items || [])
-		.filter((e) => e.status !== "cancelled")
-		.map(mapSingleEvent);
+	return (data.items || []).filter((e) => e.status !== "cancelled").map(mapSingleEvent);
 }
 
 export default calendar;

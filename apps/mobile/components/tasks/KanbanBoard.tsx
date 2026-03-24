@@ -1,11 +1,10 @@
-import { useRef } from "react";
-import { FlatList, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { FlatList, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 
-import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
-import { TaskCard } from "./TaskCard";
+import Colors from "@/constants/Colors";
 import type { Task } from "@/lib/tasks";
+import { TaskCard } from "./TaskCard";
 
 const COLUMNS = [
 	{ key: "todo" as const, label: "To Do", color: "#94A3B8" },
@@ -58,19 +57,13 @@ export function KanbanBoard({ tasks, onPressTask, onToggleStatus }: KanbanBoardP
 						data={tasksByStatus[column.key]}
 						keyExtractor={(item) => item.id}
 						renderItem={({ item }) => (
-							<TaskCard
-								task={item}
-								onPress={onPressTask}
-								onToggleStatus={onToggleStatus}
-							/>
+							<TaskCard task={item} onPress={onPressTask} onToggleStatus={onToggleStatus} />
 						)}
 						contentContainerStyle={styles.columnContent}
 						showsVerticalScrollIndicator={false}
 						ListEmptyComponent={
 							<View style={[styles.emptyState, { borderColor: colors.border }]}>
-								<Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-									No tasks
-								</Text>
+								<Text style={[styles.emptyText, { color: colors.textSecondary }]}>No tasks</Text>
 							</View>
 						}
 					/>

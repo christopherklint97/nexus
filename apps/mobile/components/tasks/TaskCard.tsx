@@ -1,9 +1,9 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
-import { PriorityBadge } from "./PriorityBadge";
+import Colors from "@/constants/Colors";
 import type { Task } from "@/lib/tasks";
+import { PriorityBadge } from "./PriorityBadge";
 
 interface TaskCardProps {
 	task: Task;
@@ -35,10 +35,7 @@ export function TaskCard({ task, onPress, onToggleStatus }: TaskCardProps) {
 			<View style={styles.row}>
 				<Pressable style={styles.statusButton} onPress={() => onToggleStatus(task)}>
 					<Text
-						style={[
-							styles.statusIcon,
-							{ color: isDone ? colors.success : colors.textSecondary },
-						]}
+						style={[styles.statusIcon, { color: isDone ? colors.success : colors.textSecondary }]}
 					>
 						{STATUS_ICONS[task.status]}
 					</Text>
@@ -63,11 +60,12 @@ export function TaskCard({ task, onPress, onToggleStatus }: TaskCardProps) {
 						{task.labels.map((label) => (
 							<View
 								key={label.id}
-								style={[styles.label, { backgroundColor: label.color + "20", borderColor: label.color + "40" }]}
+								style={[
+									styles.label,
+									{ backgroundColor: label.color + "20", borderColor: label.color + "40" },
+								]}
 							>
-								<Text style={[styles.labelText, { color: label.color }]}>
-									{label.name}
-								</Text>
+								<Text style={[styles.labelText, { color: label.color }]}>{label.name}</Text>
 							</View>
 						))}
 

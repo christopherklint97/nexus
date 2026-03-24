@@ -1,16 +1,8 @@
-import { useState, useCallback, useRef } from "react";
-import {
-	FlatList,
-	Pressable,
-	StyleSheet,
-	Text,
-	TextInput,
-	View,
-	Modal,
-} from "react-native";
+import { useCallback, useRef, useState } from "react";
+import { FlatList, Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
-import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 import type { NoteBlock } from "@/lib/notes";
 
 interface BlockEditorProps {
@@ -31,7 +23,12 @@ const BLOCK_TYPES = [
 ] as const;
 
 function newBlock(type: NoteBlock["type"] = "text"): NoteBlock {
-	return { id: crypto.randomUUID(), type, content: "", checked: type === "checklist" ? false : undefined };
+	return {
+		id: crypto.randomUUID(),
+		type,
+		content: "",
+		checked: type === "checklist" ? false : undefined,
+	};
 }
 
 export function BlockEditor({ blocks, onChange, editable = true }: BlockEditorProps) {
@@ -186,9 +183,19 @@ export function BlockEditor({ blocks, onChange, editable = true }: BlockEditorPr
 			)}
 
 			{/* Slash command menu */}
-			<Modal visible={showSlashMenu} transparent animationType="fade" onRequestClose={() => setShowSlashMenu(false)}>
+			<Modal
+				visible={showSlashMenu}
+				transparent
+				animationType="fade"
+				onRequestClose={() => setShowSlashMenu(false)}
+			>
 				<Pressable style={styles.overlay} onPress={() => setShowSlashMenu(false)}>
-					<View style={[styles.slashMenu, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+					<View
+						style={[
+							styles.slashMenu,
+							{ backgroundColor: colors.surface, borderColor: colors.border },
+						]}
+					>
 						<Text style={[styles.slashTitle, { color: colors.textSecondary }]}>Insert Block</Text>
 						{BLOCK_TYPES.map((bt) => (
 							<Pressable
@@ -201,7 +208,9 @@ export function BlockEditor({ blocks, onChange, editable = true }: BlockEditorPr
 								</View>
 								<View>
 									<Text style={[styles.slashLabel, { color: colors.text }]}>{bt.label}</Text>
-									<Text style={[styles.slashDesc, { color: colors.textSecondary }]}>{bt.description}</Text>
+									<Text style={[styles.slashDesc, { color: colors.textSecondary }]}>
+										{bt.description}
+									</Text>
 								</View>
 							</Pressable>
 						))}
@@ -223,7 +232,15 @@ interface BlockRowProps {
 	onToggleCheck: () => void;
 }
 
-function BlockRow({ block, colors, editable, inputRef, onChangeText, onKeyPress, onToggleCheck }: BlockRowProps) {
+function BlockRow({
+	block,
+	colors,
+	editable,
+	inputRef,
+	onChangeText,
+	onKeyPress,
+	onToggleCheck,
+}: BlockRowProps) {
 	if (block.type === "divider") {
 		return <View style={[styles.divider, { backgroundColor: colors.border }]} />;
 	}
@@ -231,7 +248,16 @@ function BlockRow({ block, colors, editable, inputRef, onChangeText, onKeyPress,
 	const blockStyle = getBlockStyle(block.type, colors);
 
 	return (
-		<View style={[styles.blockRow, block.type === "callout" && { ...styles.calloutBox, backgroundColor: colors.tint + "08", borderColor: colors.tint + "20" }]}>
+		<View
+			style={[
+				styles.blockRow,
+				block.type === "callout" && {
+					...styles.calloutBox,
+					backgroundColor: colors.tint + "08",
+					borderColor: colors.tint + "20",
+				},
+			]}
+		>
 			{block.type === "checklist" && (
 				<Pressable onPress={onToggleCheck} style={styles.checkContainer}>
 					<View
@@ -248,7 +274,9 @@ function BlockRow({ block, colors, editable, inputRef, onChangeText, onKeyPress,
 				</Pressable>
 			)}
 
-			{block.type === "quote" && <View style={[styles.quoteLine, { backgroundColor: colors.tint }]} />}
+			{block.type === "quote" && (
+				<View style={[styles.quoteLine, { backgroundColor: colors.tint }]} />
+			)}
 
 			{block.type === "callout" && <Text style={styles.calloutIcon}>💡</Text>}
 
@@ -258,8 +286,14 @@ function BlockRow({ block, colors, editable, inputRef, onChangeText, onKeyPress,
 					styles.blockInput,
 					blockStyle,
 					{ color: colors.text },
-					block.type === "checklist" && block.checked && { textDecorationLine: "line-through", color: colors.textSecondary },
-					block.type === "code" && { backgroundColor: colors.background, fontFamily: "SpaceMono", borderRadius: 6, padding: 12 },
+					block.type === "checklist" &&
+						block.checked && { textDecorationLine: "line-through", color: colors.textSecondary },
+					block.type === "code" && {
+						backgroundColor: colors.background,
+						fontFamily: "SpaceMono",
+						borderRadius: 6,
+						padding: 12,
+					},
 				]}
 				value={block.content}
 				onChangeText={onChangeText}
@@ -331,8 +365,21 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 	},
 	checkmark: { color: "#FFFFFF", fontSize: 13, fontWeight: "700" },
-	quoteLine: { width: 3, borderRadius: 2, marginRight: 12, marginTop: 4, minHeight: 20, alignSelf: "stretch" },
-	calloutBox: { borderWidth: 1, borderRadius: 8, marginHorizontal: 16, marginVertical: 4, padding: 8 },
+	quoteLine: {
+		width: 3,
+		borderRadius: 2,
+		marginRight: 12,
+		marginTop: 4,
+		minHeight: 20,
+		alignSelf: "stretch",
+	},
+	calloutBox: {
+		borderWidth: 1,
+		borderRadius: 8,
+		marginHorizontal: 16,
+		marginVertical: 4,
+		padding: 8,
+	},
 	calloutIcon: { fontSize: 16, marginRight: 8, marginTop: 4 },
 	divider: { height: 1, marginVertical: 12, marginHorizontal: 20 },
 	addBlockBtn: {

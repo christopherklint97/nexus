@@ -1,17 +1,16 @@
-import { useState, useCallback } from "react";
-import { Pressable, StyleSheet, Text, View, ActivityIndicator } from "react-native";
 import { Stack } from "expo-router";
-import Animated, { FadeIn } from "react-native-reanimated";
+import { useCallback, useState } from "react";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
-import Colors from "@/constants/Colors";
+import { KanbanBoard } from "@/components/tasks/KanbanBoard";
+import { QuickAddTask } from "@/components/tasks/QuickAddTask";
+import { TaskDetailSheet } from "@/components/tasks/TaskDetailSheet";
+import { TaskListView } from "@/components/tasks/TaskListView";
 import { useColorScheme } from "@/components/useColorScheme";
-import { useWorkspaceStore } from "@/stores/workspace";
+import Colors from "@/constants/Colors";
 import { useTasksQuery, useUpdateTask } from "@/lib/tasks";
 import type { Task } from "@/lib/tasks";
-import { TaskListView } from "@/components/tasks/TaskListView";
-import { KanbanBoard } from "@/components/tasks/KanbanBoard";
-import { TaskDetailSheet } from "@/components/tasks/TaskDetailSheet";
-import { QuickAddTask } from "@/components/tasks/QuickAddTask";
+import { useWorkspaceStore } from "@/stores/workspace";
 
 type ViewMode = "list" | "kanban";
 type SortBy = "priority" | "due_date" | "created_at";
@@ -117,8 +116,7 @@ export default function TasksScreen() {
 							style={[
 								styles.filterChip,
 								{
-									backgroundColor:
-										filterStatus === status ? colors.tint + "15" : "transparent",
+									backgroundColor: filterStatus === status ? colors.tint + "15" : "transparent",
 									borderColor: filterStatus === status ? colors.tint : colors.border,
 								},
 							]}

@@ -1,19 +1,19 @@
 import { useState } from "react";
 import {
-	Modal,
 	KeyboardAvoidingView,
+	Modal,
 	Platform,
 	Pressable,
+	ScrollView,
 	StyleSheet,
 	Text,
 	TextInput,
 	View,
-	ScrollView,
 } from "react-native";
 
-import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
-import { useCreateEvent, EVENT_COLORS } from "@/lib/calendar";
+import Colors from "@/constants/Colors";
+import { EVENT_COLORS, useCreateEvent } from "@/lib/calendar";
 
 interface CreateEventSheetProps {
 	visible: boolean;
@@ -63,7 +63,12 @@ export function CreateEventSheet({ visible, initialDate, onClose }: CreateEventS
 	};
 
 	return (
-		<Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+		<Modal
+			visible={visible}
+			animationType="slide"
+			presentationStyle="pageSheet"
+			onRequestClose={onClose}
+		>
 			<KeyboardAvoidingView
 				behavior={Platform.OS === "ios" ? "padding" : "height"}
 				style={[styles.container, { backgroundColor: colors.background }]}
@@ -74,7 +79,12 @@ export function CreateEventSheet({ visible, initialDate, onClose }: CreateEventS
 					</Pressable>
 					<Text style={[styles.headerTitle, { color: colors.text }]}>New Event</Text>
 					<Pressable onPress={handleCreate}>
-						<Text style={[styles.headerBtn, { color: title.trim() ? colors.tint : colors.textSecondary }]}>
+						<Text
+							style={[
+								styles.headerBtn,
+								{ color: title.trim() ? colors.tint : colors.textSecondary },
+							]}
+						>
 							Create
 						</Text>
 					</Pressable>
@@ -169,19 +179,45 @@ function formatTimeInput(d: Date): string {
 const styles = StyleSheet.create({
 	container: { flex: 1 },
 	header: {
-		flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-		paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1,
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+		paddingHorizontal: 20,
+		paddingVertical: 14,
+		borderBottomWidth: 1,
 	},
 	headerBtn: { fontSize: 16, fontWeight: "500" },
 	headerTitle: { fontSize: 16, fontWeight: "700" },
 	body: { padding: 20 },
 	titleInput: { fontSize: 20, fontWeight: "700", marginBottom: 12 },
-	descInput: { fontSize: 15, borderWidth: 1, borderRadius: 10, padding: 12, marginBottom: 20, minHeight: 60, textAlignVertical: "top" },
-	label: { fontSize: 12, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6, marginTop: 4 },
+	descInput: {
+		fontSize: 15,
+		borderWidth: 1,
+		borderRadius: 10,
+		padding: 12,
+		marginBottom: 20,
+		minHeight: 60,
+		textAlignVertical: "top",
+	},
+	label: {
+		fontSize: 12,
+		fontWeight: "700",
+		textTransform: "uppercase",
+		letterSpacing: 0.5,
+		marginBottom: 6,
+		marginTop: 4,
+	},
 	dateRow: { flexDirection: "row", gap: 10, marginBottom: 16 },
 	dateInput: { flex: 2, fontSize: 15, borderWidth: 1, borderRadius: 10, padding: 12 },
 	timeInput: { flex: 1, fontSize: 15, borderWidth: 1, borderRadius: 10, padding: 12 },
 	colorRow: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 20 },
 	colorDot: { width: 28, height: 28, borderRadius: 14 },
-	colorDotSelected: { borderWidth: 3, borderColor: "#FFFFFF", shadowColor: "#000", shadowOpacity: 0.3, shadowRadius: 3, elevation: 3 },
+	colorDotSelected: {
+		borderWidth: 3,
+		borderColor: "#FFFFFF",
+		shadowColor: "#000",
+		shadowOpacity: 0.3,
+		shadowRadius: 3,
+		elevation: 3,
+	},
 });

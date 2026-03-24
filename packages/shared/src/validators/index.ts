@@ -52,6 +52,36 @@ export const createNoteSchema = z.object({
 	workspaceId: z.string().uuid(),
 });
 
+export const recipeIngredientSchema = z.object({
+	quantity: z.number().nonnegative(),
+	unit: z.string().max(50),
+	item: z.string().min(1).max(200),
+});
+
+export const createRecipeSchema = z.object({
+	title: z.string().min(1).max(500),
+	description: z.string().max(5000).optional(),
+	ingredients: z.array(recipeIngredientSchema).optional(),
+	instructions: z.array(z.string().max(2000)).optional(),
+	prepTime: z.number().int().nonnegative().optional(),
+	cookTime: z.number().int().nonnegative().optional(),
+	servings: z.number().int().positive().optional(),
+	cuisine: z.string().max(100).optional(),
+	difficulty: z.enum(["easy", "medium", "hard"]).optional(),
+	sourceUrl: z.string().url().max(2000).optional(),
+	imageUrl: z.string().url().max(2000).optional(),
+	tags: z.array(z.string().max(50)).max(20).optional(),
+	isFavorite: z.boolean().default(false),
+	workspaceId: z.string().uuid(),
+});
+
+export const updateRecipeSchema = createRecipeSchema.partial().omit({ workspaceId: true });
+
+export const addRecipeToListSchema = z.object({
+	listId: z.string().uuid(),
+	scale: z.number().positive().default(1),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
@@ -59,3 +89,7 @@ export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
 export type CreateShoppingListInput = z.infer<typeof createShoppingListSchema>;
 export type CreateShoppingItemInput = z.infer<typeof createShoppingItemSchema>;
 export type CreateNoteInput = z.infer<typeof createNoteSchema>;
+export type CreateRecipeInput = z.infer<typeof createRecipeSchema>;
+export type UpdateRecipeInput = z.infer<typeof updateRecipeSchema>;
+export type RecipeIngredient = z.infer<typeof recipeIngredientSchema>;
+export type AddRecipeToListInput = z.infer<typeof addRecipeToListSchema>;

@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { useState } from "react";
 import {
 	KeyboardAvoidingView,
@@ -8,10 +9,9 @@ import {
 	TextInput,
 	View,
 } from "react-native";
-import { router } from "expo-router";
 
-import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 
 export default function LoginScreen() {
 	const colorScheme = useColorScheme();
@@ -27,9 +27,7 @@ export default function LoginScreen() {
 			<View style={styles.content}>
 				<Text style={[styles.brand, { color: colors.tint }]}>N</Text>
 				<Text style={[styles.title, { color: colors.text }]}>Welcome to Nexus</Text>
-				<Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-					Your Life, Unified.
-				</Text>
+				<Text style={[styles.subtitle, { color: colors.textSecondary }]}>Your Life, Unified.</Text>
 
 				<TextInput
 					style={[
@@ -74,10 +72,7 @@ export default function LoginScreen() {
 					<Text style={styles.buttonText}>Sign In</Text>
 				</Pressable>
 
-				<Pressable
-					style={styles.linkButton}
-					onPress={() => router.push("/(auth)/register")}
-				>
+				<Pressable style={styles.linkButton} onPress={() => router.push("/(auth)/register")}>
 					<Text style={[styles.linkText, { color: colors.tint }]}>
 						Don't have an account? Sign up
 					</Text>

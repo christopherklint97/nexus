@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./api";
 
 export interface ShoppingList {
@@ -29,7 +29,8 @@ export interface ShoppingItem {
 	updatedAt: string;
 }
 
-export interface ShoppingListDetail extends Omit<ShoppingList, "itemCount" | "checkedCount" | "estimatedTotal"> {
+export interface ShoppingListDetail
+	extends Omit<ShoppingList, "itemCount" | "checkedCount" | "estimatedTotal"> {
 	items: ShoppingItem[];
 }
 
@@ -131,7 +132,11 @@ export function useCreateShoppingItem() {
 export function useUpdateShoppingItem() {
 	const qc = useQueryClient();
 	return useMutation({
-		mutationFn: async ({ id, listId, ...input }: { id: string; listId: string; isChecked?: boolean; name?: string; quantity?: number }) => {
+		mutationFn: async ({
+			id,
+			listId,
+			...input
+		}: { id: string; listId: string; isChecked?: boolean; name?: string; quantity?: number }) => {
 			const res = await api.patch(`/api/shopping/items/${id}`, input);
 			return (await res.json()).data;
 		},

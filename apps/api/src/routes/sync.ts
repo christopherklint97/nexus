@@ -1,19 +1,19 @@
-import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { and, eq, gt, isNull, sql } from "drizzle-orm";
-import { z } from "zod";
 import {
-	syncLog,
-	tasks,
-	labels,
-	taskLabels,
-	shoppingLists,
-	shoppingItems,
-	shoppingRoutes,
-	notes,
-	folders,
 	documents,
+	folders,
+	labels,
+	notes,
+	shoppingItems,
+	shoppingLists,
+	shoppingRoutes,
+	syncLog,
+	taskLabels,
+	tasks,
 } from "@nexus/db/schema";
+import { and, eq, gt, sql } from "drizzle-orm";
+import { Hono } from "hono";
+import { z } from "zod";
 import { db } from "../lib/db.js";
 import { authMiddleware } from "../middleware/auth.js";
 
@@ -50,7 +50,12 @@ const pushSchema = z.object({
 sync.post("/push", zValidator("json", pushSchema), async (c) => {
 	const userId = c.get("userId");
 	const { changes } = c.req.valid("json");
-	const results: Array<{ entityType: string; entityId: string; status: string; serverTimestamp: string }> = [];
+	const results: Array<{
+		entityType: string;
+		entityId: string;
+		status: string;
+		serverTimestamp: string;
+	}> = [];
 	const serverTimestamp = new Date().toISOString();
 
 	for (const change of changes) {
@@ -70,12 +75,14 @@ sync.post("/push", zValidator("json", pushSchema), async (c) => {
 				// Check if entity already exists (idempotency)
 				const existing = db.select().from(table).where(eq(table.id, change.entityId)).get();
 				if (!existing) {
-					db.insert(table).values({
-						...change.data,
-						id: change.entityId,
-						createdAt: change.timestamp,
-						updatedAt: serverTimestamp,
-					}).run();
+					db.insert(table)
+						.values({
+							...change.data,
+							id: change.entityId,
+							createdAt: change.timestamp,
+							updatedAt: serverTimestamp,
+						})
+						.run();
 				}
 			} else if (change.operation === "update" && change.data) {
 				// Last-write-wins: compare timestamps
@@ -103,13 +110,15 @@ sync.post("/push", zValidator("json", pushSchema), async (c) => {
 			}
 
 			// Record in sync log
-			db.insert(syncLog).values({
-				entityType: change.entityType,
-				entityId: change.entityId,
-				operation: change.operation,
-				timestamp: serverTimestamp,
-				deviceId: change.deviceId,
-			}).run();
+			db.insert(syncLog)
+				.values({
+					entityType: change.entityType,
+					entityId: change.entityId,
+					operation: change.operation,
+					timestamp: serverTimestamp,
+					deviceId: change.deviceId,
+				})
+				.run();
 
 			results.push({
 				entityType: change.entityType,
@@ -164,26 +173,13 @@ sync.get("/pull", zValidator("query", pullSchema), async (c) => {
 				rows = db
 					.select()
 					.from(table)
-					.where(
-						and(
-							gt(table.updatedAt, since),
-							eq(table.workspaceId, workspaceId),
-						),
-					)
+					.where(and(gt(table.updatedAt, since), eq(table.workspaceId, workspaceId)))
 					.all();
 			} else if ("listId" in table) {
 				// Shopping items — pull through list
-				rows = db
-					.select()
-					.from(table)
-					.where(gt(table.updatedAt, since))
-					.all();
+				rows = db.select().from(table).where(gt(table.updatedAt, since)).all();
 			} else {
-				rows = db
-					.select()
-					.from(table)
-					.where(gt(table.updatedAt, since))
-					.all();
+				rows = db.select().from(table).where(gt(table.updatedAt, since)).all();
 			}
 
 			if (rows.length > 0) {
@@ -195,11 +191,7 @@ sync.get("/pull", zValidator("query", pullSchema), async (c) => {
 	}
 
 	// Get sync log entries to tell client what happened
-	const logEntries = db
-		.select()
-		.from(syncLog)
-		.where(gt(syncLog.timestamp, since))
-		.all();
+	const logEntries = db.select().from(syncLog).where(gt(syncLog.timestamp, since)).all();
 
 	return c.json({
 		data: {
@@ -212,12 +204,7 @@ sync.get("/pull", zValidator("query", pullSchema), async (c) => {
 
 // Get sync status
 sync.get("/status", (c) => {
-	const lastEntry = db
-		.select()
-		.from(syncLog)
-		.orderBy(sql`timestamp DESC`)
-		.limit(1)
-		.get();
+	const lastEntry = db.select().from(syncLog).orderBy(sql`timestamp DESC`).limit(1).get();
 
 	return c.json({
 		data: {

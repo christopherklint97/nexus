@@ -1,10 +1,10 @@
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 
-import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
-import { TaskCard } from "./TaskCard";
+import Colors from "@/constants/Colors";
 import type { Task } from "@/lib/tasks";
+import { TaskCard } from "./TaskCard";
 
 interface TaskListViewProps {
 	tasks: Task[];
