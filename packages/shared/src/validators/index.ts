@@ -20,6 +20,7 @@ export const createTaskSchema = z.object({
 	status: z.enum(["todo", "in_progress", "done"]).default("todo"),
 	priority: z.number().int().min(1).max(4).default(4),
 	dueDate: z.string().datetime().optional(),
+	recurrenceRule: z.string().max(200).optional(),
 	parentTaskId: z.string().uuid().optional(),
 	workspaceId: z.string().uuid(),
 });
@@ -81,6 +82,120 @@ export const addRecipeToListSchema = z.object({
 	listId: z.string().uuid(),
 	scale: z.number().positive().default(1),
 });
+
+// ─── Database validators ───
+
+export const propertyTypeEnum = z.enum([
+	"text",
+	"number",
+	"select",
+	"multi_select",
+	"date",
+	"checkbox",
+	"url",
+	"email",
+	"phone",
+	"relation",
+	"formula",
+	"person",
+]);
+
+export const viewTypeEnum = z.enum(["table", "board", "calendar", "gallery", "list"]);
+
+export const selectOptionSchema = z.object({
+	id: z.string(),
+	label: z.string().min(1).max(100),
+	color: z.string().max(50),
+});
+
+export const createDatabaseSchema = z.object({
+	name: z.string().min(1).max(200),
+	description: z.string().max(2000).optional(),
+	icon: z.string().max(10).optional(),
+	workspaceId: z.string().uuid(),
+});
+
+export const updateDatabaseSchema = createDatabaseSchema.partial().omit({ workspaceId: true });
+
+export const createPropertySchema = z.object({
+	databaseId: z.string().uuid(),
+	name: z.string().min(1).max(200),
+	type: propertyTypeEnum,
+	config: z.record(z.unknown()).optional(),
+	position: z.number().int().nonnegative().optional(),
+});
+
+export const updatePropertySchema = z.object({
+	name: z.string().min(1).max(200).optional(),
+	type: propertyTypeEnum.optional(),
+	config: z.record(z.unknown()).optional(),
+	position: z.number().int().nonnegative().optional(),
+	isVisible: z.boolean().optional(),
+	width: z.number().int().positive().optional(),
+});
+
+export const createViewSchema = z.object({
+	databaseId: z.string().uuid(),
+	name: z.string().min(1).max(200),
+	type: viewTypeEnum,
+	config: z.record(z.unknown()).optional(),
+	filters: z
+		.array(
+			z.object({
+				propertyId: z.string().uuid(),
+				operator: z.enum([
+					"equals",
+					"not_equals",
+					"contains",
+					"not_contains",
+					"is_empty",
+					"is_not_empty",
+					"gt",
+					"lt",
+					"gte",
+					"lte",
+				]),
+				value: z.unknown().optional(),
+			}),
+		)
+		.optional(),
+	sorts: z
+		.array(
+			z.object({
+				propertyId: z.string().uuid(),
+				direction: z.enum(["asc", "desc"]),
+			}),
+		)
+		.optional(),
+	groupByPropertyId: z.string().uuid().optional(),
+});
+
+export const updateViewSchema = createViewSchema
+	.partial()
+	.omit({ databaseId: true });
+
+export const createRowSchema = z.object({
+	databaseId: z.string().uuid(),
+	values: z.record(z.unknown()).default({}),
+	position: z.number().int().nonnegative().optional(),
+});
+
+export const updateRowSchema = z.object({
+	values: z.record(z.unknown()).optional(),
+	position: z.number().int().nonnegative().optional(),
+});
+
+export type PropertyType = z.infer<typeof propertyTypeEnum>;
+export type ViewType = z.infer<typeof viewTypeEnum>;
+export type SelectOption = z.infer<typeof selectOptionSchema>;
+export type CreateDatabaseInput = z.infer<typeof createDatabaseSchema>;
+export type UpdateDatabaseInput = z.infer<typeof updateDatabaseSchema>;
+export type CreatePropertyInput = z.infer<typeof createPropertySchema>;
+export type UpdatePropertyInput = z.infer<typeof updatePropertySchema>;
+export type CreateViewInput = z.infer<typeof createViewSchema>;
+export type UpdateViewInput = z.infer<typeof updateViewSchema>;
+export type CreateRowInput = z.infer<typeof createRowSchema>;
+export type UpdateRowInput = z.infer<typeof updateRowSchema>;
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;

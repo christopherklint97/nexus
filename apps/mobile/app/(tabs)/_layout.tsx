@@ -1,36 +1,43 @@
 import { Tabs, router } from "expo-router";
 import { SymbolView } from "expo-symbols";
-import { Pressable, Text } from "react-native";
+import { useState } from "react";
+import { Pressable, Text, View } from "react-native";
 
+import { NotificationBell, NotificationCenter } from "@/components/navigation/NotificationCenter";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { useNavigationStore } from "@/stores/navigation";
 
 export default function TabLayout() {
 	const colorScheme = useColorScheme();
+	const colors = Colors[colorScheme];
+	const setDrawerOpen = useNavigationStore((s) => s.setDrawerOpen);
+	const [showNotifications, setShowNotifications] = useState(false);
 
 	return (
+		<>
 		<Tabs
 			screenOptions={{
-				tabBarActiveTintColor: Colors[colorScheme].tint,
-				tabBarInactiveTintColor: Colors[colorScheme].tabIconDefault,
+				tabBarActiveTintColor: colors.tint,
+				tabBarInactiveTintColor: colors.tabIconDefault,
 				tabBarStyle: {
-					backgroundColor: Colors[colorScheme].surface,
-					borderTopColor: Colors[colorScheme].border,
+					backgroundColor: colors.surface,
+					borderTopColor: colors.border,
 					borderTopWidth: 1,
 					elevation: 0,
 					shadowOpacity: 0,
 				},
 				headerStyle: {
-					backgroundColor: Colors[colorScheme].surface,
+					backgroundColor: colors.surface,
 					elevation: 0,
 					shadowOpacity: 0,
 					borderBottomWidth: 1,
-					borderBottomColor: Colors[colorScheme].border,
+					borderBottomColor: colors.border,
 				},
 				headerTitleStyle: {
 					fontWeight: "700",
 					fontSize: 18,
-					color: Colors[colorScheme].text,
+					color: colors.text,
 				},
 			}}
 		>
@@ -45,10 +52,23 @@ export default function TabLayout() {
 							size={24}
 						/>
 					),
-					headerRight: () => (
-						<Pressable style={{ marginRight: 16 }} onPress={() => router.push("/settings")}>
-							<Text style={{ fontSize: 20 }}>⚙</Text>
+					headerLeft: () => (
+						<Pressable
+							style={{ marginLeft: 16 }}
+							onPress={() => setDrawerOpen(true)}
+						>
+							<Text style={{ fontSize: 20, color: colors.textSecondary }}>
+								{"\u2630"}
+							</Text>
 						</Pressable>
+					),
+					headerRight: () => (
+						<View style={{ flexDirection: "row", alignItems: "center", gap: 14, marginRight: 16 }}>
+							<NotificationBell onPress={() => setShowNotifications(true)} />
+							<Pressable onPress={() => router.push("/settings")}>
+								<Text style={{ fontSize: 18 }}>{"\u2699"}</Text>
+							</Pressable>
+						</View>
 					),
 				}}
 			/>
@@ -99,6 +119,42 @@ export default function TabLayout() {
 				}}
 			/>
 			<Tabs.Screen
+				name="databases"
+				options={{
+					title: "Databases",
+					headerShown: false,
+					tabBarIcon: ({ color }) => (
+						<SymbolView
+							name={{
+								ios: "tablecells",
+								android: "grid_view",
+								web: "grid_view",
+							}}
+							tintColor={color}
+							size={24}
+						/>
+					),
+				}}
+			/>
+			<Tabs.Screen
+				name="recipes"
+				options={{
+					title: "Recipes",
+					headerShown: false,
+					tabBarIcon: ({ color }) => (
+						<SymbolView
+							name={{
+								ios: "book.fill",
+								android: "menu_book",
+								web: "menu_book",
+							}}
+							tintColor={color}
+							size={24}
+						/>
+					),
+				}}
+			/>
+			<Tabs.Screen
 				name="calendar"
 				options={{
 					title: "Calendar",
@@ -117,5 +173,10 @@ export default function TabLayout() {
 				}}
 			/>
 		</Tabs>
+		<NotificationCenter
+			visible={showNotifications}
+			onClose={() => setShowNotifications(false)}
+		/>
+		</>
 	);
 }

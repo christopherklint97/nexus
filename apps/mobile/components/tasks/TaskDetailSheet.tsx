@@ -14,7 +14,24 @@ import {
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { useCreateTask, useDeleteTask, useTaskDetailQuery, useUpdateTask } from "@/lib/tasks";
+import { toast } from "@/components/ui/Toast";
 import { PriorityBadge } from "./PriorityBadge";
+
+const RECURRENCE_PRESETS = [
+	{ label: "None", value: "" },
+	{ label: "Daily", value: "FREQ=DAILY;INTERVAL=1" },
+	{ label: "Weekdays", value: "FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU,WE,TH,FR" },
+	{ label: "Weekly", value: "FREQ=WEEKLY;INTERVAL=1" },
+	{ label: "Biweekly", value: "FREQ=WEEKLY;INTERVAL=2" },
+	{ label: "Monthly", value: "FREQ=MONTHLY;INTERVAL=1" },
+	{ label: "Yearly", value: "FREQ=YEARLY;INTERVAL=1" },
+] as const;
+
+function getRecurrenceLabel(rule: string | null): string {
+	if (!rule) return "None";
+	const preset = RECURRENCE_PRESETS.find((p) => p.value === rule);
+	return preset?.label || "Custom";
+}
 
 interface TaskDetailSheetProps {
 	taskId: string | null;
@@ -41,6 +58,9 @@ export function TaskDetailSheet({ taskId, workspaceId, visible, onClose }: TaskD
 	const [description, setDescription] = useState("");
 	const [status, setStatus] = useState<"todo" | "in_progress" | "done">("todo");
 	const [priority, setPriority] = useState(4);
+	const [dueDate, setDueDate] = useState("");
+	const [recurrenceRule, setRecurrenceRule] = useState("");
+	const [showRecurrence, setShowRecurrence] = useState(false);
 	const [newSubtask, setNewSubtask] = useState("");
 
 	useEffect(() => {
@@ -49,18 +69,31 @@ export function TaskDetailSheet({ taskId, workspaceId, visible, onClose }: TaskD
 			setDescription(task.description || "");
 			setStatus(task.status);
 			setPriority(task.priority);
+			setDueDate(task.dueDate || "");
+			setRecurrenceRule(task.recurrenceRule || "");
 		}
 	}, [task]);
 
 	const handleSave = () => {
 		if (!taskId) return;
-		updateTask.mutate({
-			id: taskId,
-			title,
-			description: description || undefined,
-			status,
-			priority,
-		});
+		updateTask.mutate(
+			{
+				id: taskId,
+				title,
+				description: description || undefined,
+				status,
+				priority,
+				dueDate: dueDate || undefined,
+				recurrenceRule: recurrenceRule || undefined,
+			},
+			{
+				onSuccess: (data: any) => {
+					if (data?.nextRecurrence) {
+						toast.info(`Next occurrence created for ${new Date(data.nextRecurrence.dueDate).toLocaleDateString()}`);
+					}
+				},
+			},
+		);
 	};
 
 	const handleDelete = () => {
@@ -171,6 +204,76 @@ export function TaskDetailSheet({ taskId, workspaceId, visible, onClose }: TaskD
 							</Pressable>
 						))}
 					</View>
+
+					{/* Due Date */}
+					<Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Due Date</Text>
+					<TextInput
+						style={[
+							styles.dateInput,
+							{
+								color: colors.text,
+								borderColor: colors.border,
+								backgroundColor: colors.surface,
+							},
+						]}
+						value={dueDate ? new Date(dueDate).toLocaleDateString() : ""}
+						placeholder="No due date (tap to set YYYY-MM-DD)"
+						placeholderTextColor={colors.textSecondary}
+						onChangeText={(text) => {
+							// Accept ISO format or try to parse
+							if (/^\d{4}-\d{2}-\d{2}/.test(text)) {
+								setDueDate(new Date(text).toISOString());
+							} else if (text === "") {
+								setDueDate("");
+							}
+						}}
+						keyboardType="default"
+					/>
+					{dueDate ? (
+						<Pressable onPress={() => setDueDate("")}>
+							<Text style={[styles.clearDateText, { color: colors.danger }]}>Clear due date</Text>
+						</Pressable>
+					) : null}
+
+					{/* Recurrence */}
+					<Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Repeat</Text>
+					<Pressable
+						style={[styles.recurrenceBtn, { borderColor: colors.border, backgroundColor: colors.surface }]}
+						onPress={() => setShowRecurrence(!showRecurrence)}
+					>
+						<Text style={[styles.recurrenceLabel, { color: recurrenceRule ? colors.tint : colors.textSecondary }]}>
+							{recurrenceRule ? "\uD83D\uDD01 " : ""}{getRecurrenceLabel(recurrenceRule || null)}
+						</Text>
+					</Pressable>
+					{showRecurrence && (
+						<View style={styles.recurrenceOptions}>
+							{RECURRENCE_PRESETS.map((preset) => (
+								<Pressable
+									key={preset.value}
+									style={[
+										styles.recurrenceChip,
+										{
+											backgroundColor: recurrenceRule === preset.value ? colors.tint + "15" : colors.surface,
+											borderColor: recurrenceRule === preset.value ? colors.tint : colors.border,
+										},
+									]}
+									onPress={() => {
+										setRecurrenceRule(preset.value);
+										setShowRecurrence(false);
+									}}
+								>
+									<Text
+										style={[
+											styles.recurrenceChipText,
+											{ color: recurrenceRule === preset.value ? colors.tint : colors.text },
+										]}
+									>
+										{preset.label}
+									</Text>
+								</Pressable>
+							))}
+						</View>
+					)}
 
 					{/* Labels */}
 					{task?.labels && task.labels.length > 0 && (
@@ -365,6 +468,47 @@ const styles = StyleSheet.create({
 	addButton: {
 		fontSize: 14,
 		fontWeight: "600",
+	},
+	dateInput: {
+		height: 44,
+		borderRadius: 10,
+		borderWidth: 1,
+		paddingHorizontal: 12,
+		fontSize: 15,
+		marginBottom: 4,
+	},
+	clearDateText: {
+		fontSize: 13,
+		fontWeight: "500",
+		marginBottom: 16,
+		marginTop: 4,
+	},
+	recurrenceBtn: {
+		paddingHorizontal: 14,
+		paddingVertical: 10,
+		borderRadius: 10,
+		borderWidth: 1,
+		marginBottom: 8,
+	},
+	recurrenceLabel: {
+		fontSize: 14,
+		fontWeight: "500",
+	},
+	recurrenceOptions: {
+		flexDirection: "row",
+		flexWrap: "wrap",
+		gap: 6,
+		marginBottom: 20,
+	},
+	recurrenceChip: {
+		paddingHorizontal: 12,
+		paddingVertical: 6,
+		borderRadius: 16,
+		borderWidth: 1,
+	},
+	recurrenceChipText: {
+		fontSize: 13,
+		fontWeight: "500",
 	},
 	deleteButton: {
 		alignItems: "center",

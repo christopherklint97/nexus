@@ -1,12 +1,55 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "./api";
 
+export type BlockType =
+	| "text"
+	| "heading"
+	| "subheading"
+	| "heading3"
+	| "bulleted_list"
+	| "numbered_list"
+	| "checklist"
+	| "toggle"
+	| "code"
+	| "quote"
+	| "callout"
+	| "divider"
+	| "image"
+	| "bookmark"
+	| "table"
+	| "column_list";
+
+export interface InlineFormat {
+	type: "bold" | "italic" | "strikethrough" | "code" | "underline" | "link";
+	start: number;
+	end: number;
+	url?: string; // for link type
+}
+
 export interface NoteBlock {
 	id: string;
-	type: "text" | "heading" | "subheading" | "checklist" | "code" | "quote" | "divider" | "callout";
+	type: BlockType;
 	content: string;
 	checked?: boolean;
 	language?: string;
+	formats?: InlineFormat[];
+	// Toggle blocks
+	collapsed?: boolean;
+	children?: NoteBlock[];
+	// Image/bookmark blocks
+	url?: string;
+	caption?: string;
+	// Table blocks
+	rows?: string[][];
+	// Column blocks
+	columns?: NoteBlock[][];
+	// Callout
+	emoji?: string;
+	// Indent level (for nested lists)
+	indent?: number;
+	// Color/background
+	color?: string;
+	bgColor?: string;
 }
 
 export interface Note {

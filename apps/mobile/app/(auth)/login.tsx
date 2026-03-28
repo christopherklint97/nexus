@@ -1,6 +1,7 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import {
+	ActivityIndicator,
 	KeyboardAvoidingView,
 	Platform,
 	Pressable,
@@ -12,12 +13,63 @@ import {
 
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { api } from "@/lib/api";
+import { useAuthStore } from "@/stores/auth";
+import { useWorkspaceStore } from "@/stores/workspace";
 
 export default function LoginScreen() {
 	const colorScheme = useColorScheme();
 	const colors = Colors[colorScheme];
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [error, setError] = useState("");
+	const [loading, setLoading] = useState(false);
+	const setAuth = useAuthStore((s) => s.setAuth);
+	const setWorkspace = useWorkspaceStore((s) => s.setActiveWorkspace);
+
+	const handleLogin = async () => {
+		setError("");
+		if (!email.trim() || !password) {
+			setError("Please enter your email and password.");
+			return;
+		}
+
+		setLoading(true);
+		try {
+			const res = await fetch(
+				`${process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000"}/api/auth/login`,
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
+				},
+			);
+			const json = await res.json();
+
+			if (!res.ok) {
+				setError(json.error?.message || "Invalid credentials.");
+				return;
+			}
+
+			const { user, accessToken, refreshToken } = json.data;
+			setAuth(user, accessToken, refreshToken);
+
+			// Fetch workspaces and set active one
+			const wsRes = await api.get("/api/auth/me");
+			if (wsRes.ok) {
+				const wsJson = await wsRes.json();
+				if (wsJson.data?.workspaceId) {
+					setWorkspace(wsJson.data.workspaceId);
+				}
+			}
+
+			router.replace("/(tabs)");
+		} catch {
+			setError("Unable to connect. Check your network.");
+		} finally {
+			setLoading(false);
+		}
+	};
 
 	return (
 		<KeyboardAvoidingView
@@ -28,6 +80,12 @@ export default function LoginScreen() {
 				<Text style={[styles.brand, { color: colors.tint }]}>N</Text>
 				<Text style={[styles.title, { color: colors.text }]}>Welcome to Nexus</Text>
 				<Text style={[styles.subtitle, { color: colors.textSecondary }]}>Your Life, Unified.</Text>
+
+				{error ? (
+					<View style={[styles.errorBox, { backgroundColor: colors.danger + "15" }]}>
+						<Text style={[styles.errorText, { color: colors.danger }]}>{error}</Text>
+					</View>
+				) : null}
 
 				<TextInput
 					style={[
@@ -44,6 +102,7 @@ export default function LoginScreen() {
 					onChangeText={setEmail}
 					autoCapitalize="none"
 					keyboardType="email-address"
+					editable={!loading}
 				/>
 
 				<TextInput
@@ -60,16 +119,20 @@ export default function LoginScreen() {
 					value={password}
 					onChangeText={setPassword}
 					secureTextEntry
+					editable={!loading}
+					onSubmitEditing={handleLogin}
 				/>
 
 				<Pressable
-					style={[styles.button, { backgroundColor: colors.tint }]}
-					onPress={() => {
-						// TODO: Implement login
-						router.replace("/(tabs)");
-					}}
+					style={[styles.button, { backgroundColor: colors.tint, opacity: loading ? 0.7 : 1 }]}
+					onPress={handleLogin}
+					disabled={loading}
 				>
-					<Text style={styles.buttonText}>Sign In</Text>
+					{loading ? (
+						<ActivityIndicator color="#FFFFFF" />
+					) : (
+						<Text style={styles.buttonText}>Sign In</Text>
+					)}
 				</Pressable>
 
 				<Pressable style={styles.linkButton} onPress={() => router.push("/(auth)/register")}>
@@ -107,6 +170,16 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 		marginTop: 4,
 		marginBottom: 40,
+	},
+	errorBox: {
+		padding: 12,
+		borderRadius: 8,
+		marginBottom: 12,
+	},
+	errorText: {
+		fontSize: 13,
+		fontWeight: "500",
+		textAlign: "center",
 	},
 	input: {
 		height: 48,

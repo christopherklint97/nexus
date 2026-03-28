@@ -12,6 +12,7 @@ import {
 	verifyToken,
 } from "../lib/auth.js";
 import { db } from "../lib/db.js";
+import { authMiddleware } from "../middleware/auth.js";
 
 const auth = new Hono();
 
@@ -91,6 +92,28 @@ auth.post("/refresh", zValidator("json", z.object({ refreshToken: z.string() }))
 			401,
 		);
 	}
+});
+
+// ─── Get Current User & Workspace ───
+
+auth.get("/me", authMiddleware, async (c) => {
+	const userId = c.get("userId");
+	const user = db.select().from(users).where(eq(users.id, userId)).get();
+
+	if (!user) {
+		return c.json({ error: { message: "User not found", code: "NOT_FOUND" } }, 404);
+	}
+
+	const workspace = db.select().from(workspaces).where(eq(workspaces.ownerId, userId)).get();
+
+	return c.json({
+		data: {
+			id: user.id,
+			email: user.email,
+			name: user.name,
+			workspaceId: workspace?.id || null,
+		},
+	});
 });
 
 export default auth;

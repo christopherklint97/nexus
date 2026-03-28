@@ -1,6 +1,7 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import {
+	ActivityIndicator,
 	KeyboardAvoidingView,
 	Platform,
 	Pressable,
@@ -12,6 +13,7 @@ import {
 
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { useAuthStore } from "@/stores/auth";
 
 export default function RegisterScreen() {
 	const colorScheme = useColorScheme();
@@ -19,6 +21,55 @@ export default function RegisterScreen() {
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [error, setError] = useState("");
+	const [loading, setLoading] = useState(false);
+	const setAuth = useAuthStore((s) => s.setAuth);
+
+	const handleRegister = async () => {
+		setError("");
+		if (!name.trim()) {
+			setError("Please enter your name.");
+			return;
+		}
+		if (!email.trim()) {
+			setError("Please enter your email.");
+			return;
+		}
+		if (password.length < 8) {
+			setError("Password must be at least 8 characters.");
+			return;
+		}
+
+		setLoading(true);
+		try {
+			const res = await fetch(
+				`${process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000"}/api/auth/register`,
+				{
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						name: name.trim(),
+						email: email.trim().toLowerCase(),
+						password,
+					}),
+				},
+			);
+			const json = await res.json();
+
+			if (!res.ok) {
+				setError(json.error?.message || "Registration failed.");
+				return;
+			}
+
+			const { user, accessToken, refreshToken } = json.data;
+			setAuth(user, accessToken, refreshToken);
+			router.replace("/(tabs)");
+		} catch {
+			setError("Unable to connect. Check your network.");
+		} finally {
+			setLoading(false);
+		}
+	};
 
 	return (
 		<KeyboardAvoidingView
@@ -30,6 +81,12 @@ export default function RegisterScreen() {
 				<Text style={[styles.subtitle, { color: colors.textSecondary }]}>
 					Get started with Nexus
 				</Text>
+
+				{error ? (
+					<View style={[styles.errorBox, { backgroundColor: colors.danger + "15" }]}>
+						<Text style={[styles.errorText, { color: colors.danger }]}>{error}</Text>
+					</View>
+				) : null}
 
 				<TextInput
 					style={[
@@ -44,6 +101,7 @@ export default function RegisterScreen() {
 					placeholderTextColor={colors.textSecondary}
 					value={name}
 					onChangeText={setName}
+					editable={!loading}
 				/>
 
 				<TextInput
@@ -61,6 +119,7 @@ export default function RegisterScreen() {
 					onChangeText={setEmail}
 					autoCapitalize="none"
 					keyboardType="email-address"
+					editable={!loading}
 				/>
 
 				<TextInput
@@ -77,16 +136,20 @@ export default function RegisterScreen() {
 					value={password}
 					onChangeText={setPassword}
 					secureTextEntry
+					editable={!loading}
+					onSubmitEditing={handleRegister}
 				/>
 
 				<Pressable
-					style={[styles.button, { backgroundColor: colors.tint }]}
-					onPress={() => {
-						// TODO: Implement registration
-						router.replace("/(tabs)");
-					}}
+					style={[styles.button, { backgroundColor: colors.tint, opacity: loading ? 0.7 : 1 }]}
+					onPress={handleRegister}
+					disabled={loading}
 				>
-					<Text style={styles.buttonText}>Create Account</Text>
+					{loading ? (
+						<ActivityIndicator color="#FFFFFF" />
+					) : (
+						<Text style={styles.buttonText}>Create Account</Text>
+					)}
 				</Pressable>
 
 				<Pressable style={styles.linkButton} onPress={() => router.back()}>
@@ -118,6 +181,16 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 		marginTop: 4,
 		marginBottom: 40,
+	},
+	errorBox: {
+		padding: 12,
+		borderRadius: 8,
+		marginBottom: 12,
+	},
+	errorText: {
+		fontSize: 13,
+		fontWeight: "500",
+		textAlign: "center",
 	},
 	input: {
 		height: 48,

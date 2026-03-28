@@ -1,11 +1,13 @@
 import { Stack, router } from "expo-router";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 
 import { CreateListSheet } from "@/components/shopping/CreateListSheet";
 import { RoutePlanner } from "@/components/shopping/RoutePlanner";
 import { ShoppingListCard } from "@/components/shopping/ShoppingListCard";
+import { EmptyShopping } from "@/components/ui/EmptyState";
+import { SkeletonScreen } from "@/components/ui/Skeleton";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { useShoppingListsQuery } from "@/lib/shopping";
@@ -17,7 +19,7 @@ export default function ShoppingScreen() {
 	const colors = Colors[colorScheme];
 	const workspaceId = useWorkspaceStore((s) => s.activeWorkspaceId);
 
-	const { data: lists, isLoading } = useShoppingListsQuery(workspaceId || "");
+	const { data: lists, isLoading, refetch, isRefetching } = useShoppingListsQuery(workspaceId || "");
 	const [showCreateList, setShowCreateList] = useState(false);
 	const [showRoutePlanner, setShowRoutePlanner] = useState(false);
 
@@ -57,9 +59,7 @@ export default function ShoppingScreen() {
 
 			<View style={[styles.container, { backgroundColor: colors.background }]}>
 				{isLoading ? (
-					<View style={styles.center}>
-						<ActivityIndicator color={colors.tint} />
-					</View>
+					<SkeletonScreen rows={5} />
 				) : (
 					<FlatList
 						data={lists}
@@ -71,13 +71,11 @@ export default function ShoppingScreen() {
 						)}
 						contentContainerStyle={styles.list}
 						showsVerticalScrollIndicator={false}
+						refreshControl={
+							<RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} tintColor={colors.tint} />
+						}
 						ListEmptyComponent={
-							<View style={styles.emptyContainer}>
-								<Text style={[styles.emptyTitle, { color: colors.text }]}>No shopping lists</Text>
-								<Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-									Tap + to create your first list
-								</Text>
-							</View>
+							<EmptyShopping onAdd={() => setShowCreateList(true)} />
 						}
 					/>
 				)}

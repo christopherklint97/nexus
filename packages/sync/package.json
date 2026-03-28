@@ -10,5 +10,8 @@
 	},
 	"dependencies": {
 		"@nexus/db": "workspace:*"
+	},
+	"peerDependencies": {
+		"react": ">=18"
 	}
 }

@@ -1,9 +1,9 @@
 import { Stack, router } from "expo-router";
 import { useCallback, useState } from "react";
 import {
-	ActivityIndicator,
 	FlatList,
 	Pressable,
+	RefreshControl,
 	StyleSheet,
 	Text,
 	TextInput,
@@ -12,6 +12,8 @@ import {
 import Animated, { FadeIn } from "react-native-reanimated";
 
 import { NoteCard } from "@/components/notes/NoteCard";
+import { EmptyNotes } from "@/components/ui/EmptyState";
+import { SkeletonScreen } from "@/components/ui/Skeleton";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { useCreateNote, useFoldersQuery, useNotesQuery } from "@/lib/notes";
@@ -26,7 +28,7 @@ export default function NotesScreen() {
 	const [search, setSearch] = useState("");
 	const [activeFolderId, setActiveFolderId] = useState<string | undefined>();
 
-	const { data: notes, isLoading } = useNotesQuery({
+	const { data: notes, isLoading, refetch, isRefetching } = useNotesQuery({
 		workspaceId: workspaceId || "",
 		folderId: activeFolderId,
 		search: search || undefined,
@@ -140,9 +142,7 @@ export default function NotesScreen() {
 
 				{/* Notes list */}
 				{isLoading ? (
-					<View style={styles.center}>
-						<ActivityIndicator color={colors.tint} />
-					</View>
+					<SkeletonScreen rows={6} />
 				) : (
 					<FlatList
 						data={[...pinnedNotes, ...regularNotes]}
@@ -164,13 +164,11 @@ export default function NotesScreen() {
 						)}
 						contentContainerStyle={styles.list}
 						showsVerticalScrollIndicator={false}
+						refreshControl={
+							<RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} tintColor={colors.tint} />
+						}
 						ListEmptyComponent={
-							<View style={styles.emptyContainer}>
-								<Text style={[styles.emptyTitle, { color: colors.text }]}>No notes yet</Text>
-								<Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-									Tap + to create your first note
-								</Text>
-							</View>
+							<EmptyNotes onAdd={handleCreateNote} />
 						}
 					/>
 				)}

@@ -6,3 +6,6 @@ export * from "./notes.js";
 export * from "./calendar.js";
 export * from "./recipes.js";
 export * from "./sync.js";
+export * from "./databases.js";
+export * from "./collaboration.js";
+export * from "./integrations.js";

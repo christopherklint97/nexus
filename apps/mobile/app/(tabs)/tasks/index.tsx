@@ -1,11 +1,13 @@
 import { Stack } from "expo-router";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { KanbanBoard } from "@/components/tasks/KanbanBoard";
 import { QuickAddTask } from "@/components/tasks/QuickAddTask";
 import { TaskDetailSheet } from "@/components/tasks/TaskDetailSheet";
 import { TaskListView } from "@/components/tasks/TaskListView";
+import { EmptyTasks } from "@/components/ui/EmptyState";
+import { SkeletonScreen } from "@/components/ui/Skeleton";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { useTasksQuery, useUpdateTask } from "@/lib/tasks";
@@ -28,7 +30,7 @@ export default function TasksScreen() {
 	const [showDetail, setShowDetail] = useState(false);
 	const [showQuickAdd, setShowQuickAdd] = useState(false);
 
-	const { data: tasks, isLoading } = useTasksQuery({
+	const { data: tasks, isLoading, refetch, isRefetching } = useTasksQuery({
 		workspaceId: workspaceId || "",
 		status: filterStatus === "all" ? undefined : filterStatus,
 		sort: sortBy,
@@ -144,18 +146,24 @@ export default function TasksScreen() {
 
 				{/* Content */}
 				{isLoading ? (
-					<View style={styles.center}>
-						<ActivityIndicator color={colors.tint} />
-					</View>
+					<SkeletonScreen rows={8} />
+				) : !tasks || tasks.length === 0 ? (
+					<ScrollView
+						refreshControl={
+							<RefreshControl refreshing={isRefetching} onRefresh={() => refetch()} tintColor={colors.tint} />
+						}
+					>
+						<EmptyTasks onAdd={() => setShowQuickAdd(true)} />
+					</ScrollView>
 				) : viewMode === "list" ? (
 					<TaskListView
-						tasks={tasks || []}
+						tasks={tasks}
 						onPressTask={handlePressTask}
 						onToggleStatus={handleToggleStatus}
 					/>
 				) : (
 					<KanbanBoard
-						tasks={(tasks || []).filter((t) => !t.parentTaskId)}
+						tasks={tasks.filter((t) => !t.parentTaskId)}
 						onPressTask={handlePressTask}
 						onToggleStatus={handleToggleStatus}
 					/>

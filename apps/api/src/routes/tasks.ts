@@ -6,6 +6,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { db } from "../lib/db.js";
 import { authMiddleware } from "../middleware/auth.js";
+import { getNextOccurrence, parseRecurrenceRule } from "../lib/recurrence.js";
 
 const tasksRouter = new Hono();
 tasksRouter.use("*", authMiddleware);
@@ -175,6 +176,7 @@ tasksRouter.post("/", zValidator("json", createTaskSchema), async (c) => {
 			status: input.status,
 			priority: input.priority,
 			dueDate: input.dueDate || null,
+			recurrenceRule: input.recurrenceRule || null,
 			parentTaskId: input.parentTaskId || null,
 			workspaceId: input.workspaceId,
 			createdAt: now,
@@ -208,11 +210,46 @@ tasksRouter.patch("/:id", zValidator("json", updateTaskSchema), async (c) => {
 	if (input.priority !== undefined) updates.priority = input.priority;
 	if (input.dueDate !== undefined) updates.dueDate = input.dueDate;
 	if (input.parentTaskId !== undefined) updates.parentTaskId = input.parentTaskId;
+	if (input.recurrenceRule !== undefined) updates.recurrenceRule = input.recurrenceRule || null;
 
 	db.update(tasks).set(updates).where(eq(tasks.id, id)).run();
 
+	// Auto-create next occurrence for recurring tasks when completed
+	let nextTask = null;
+	if (
+		input.status === "done" &&
+		existing.status !== "done" &&
+		existing.recurrenceRule
+	) {
+		const rule = parseRecurrenceRule(existing.recurrenceRule);
+		if (rule) {
+			const baseDate = existing.dueDate ? new Date(existing.dueDate) : new Date();
+			const nextDueDate = getNextOccurrence(baseDate, rule);
+			const nextId = crypto.randomUUID();
+			const now2 = new Date().toISOString();
+
+			db.insert(tasks)
+				.values({
+					id: nextId,
+					title: existing.title,
+					description: existing.description,
+					status: "todo",
+					priority: existing.priority,
+					dueDate: nextDueDate.toISOString(),
+					recurrenceRule: existing.recurrenceRule,
+					parentTaskId: existing.parentTaskId,
+					workspaceId: existing.workspaceId,
+					createdAt: now2,
+					updatedAt: now2,
+				})
+				.run();
+
+			nextTask = db.select().from(tasks).where(eq(tasks.id, nextId)).get();
+		}
+	}
+
 	const updated = db.select().from(tasks).where(eq(tasks.id, id)).get();
-	return c.json({ data: updated });
+	return c.json({ data: { ...updated, nextRecurrence: nextTask } });
 });
 
 // Delete task (soft delete)

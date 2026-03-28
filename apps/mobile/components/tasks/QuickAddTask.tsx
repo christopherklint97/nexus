@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+	ActivityIndicator,
 	KeyboardAvoidingView,
 	Modal,
 	Platform,
@@ -12,7 +13,9 @@ import {
 
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { useParseTask } from "@/lib/ai";
 import { useCreateTask } from "@/lib/tasks";
+import { toast } from "@/components/ui/Toast";
 import { PriorityBadge } from "./PriorityBadge";
 
 interface QuickAddTaskProps {
@@ -25,9 +28,13 @@ export function QuickAddTask({ visible, workspaceId, onClose }: QuickAddTaskProp
 	const colorScheme = useColorScheme();
 	const colors = Colors[colorScheme];
 	const createTask = useCreateTask();
+	const parseTask = useParseTask();
 
 	const [title, setTitle] = useState("");
 	const [priority, setPriority] = useState(4);
+	const [dueDate, setDueDate] = useState<string | null>(null);
+	const [recurrenceRule, setRecurrenceRule] = useState<string | null>(null);
+	const [aiParsed, setAiParsed] = useState(false);
 
 	const handleCreate = () => {
 		if (!title.trim()) return;
@@ -35,16 +42,38 @@ export function QuickAddTask({ visible, workspaceId, onClose }: QuickAddTaskProp
 			{
 				title: title.trim(),
 				priority,
+				dueDate: dueDate || undefined,
+				recurrenceRule: recurrenceRule || undefined,
 				workspaceId,
 			},
 			{
 				onSuccess: () => {
 					setTitle("");
 					setPriority(4);
+					setDueDate(null);
+					setRecurrenceRule(null);
+					setAiParsed(false);
 					onClose();
 				},
 			},
 		);
+	};
+
+	const handleAIParse = () => {
+		if (!title.trim()) return;
+		parseTask.mutate(title.trim(), {
+			onSuccess: (data) => {
+				setTitle(data.title);
+				if (data.priority) setPriority(data.priority);
+				if (data.dueDate) setDueDate(data.dueDate);
+				if (data.recurrenceRule) setRecurrenceRule(data.recurrenceRule);
+				setAiParsed(true);
+				toast.success("Parsed with AI");
+			},
+			onError: () => {
+				toast.info("AI parsing unavailable, using raw input");
+			},
+		});
 	};
 
 	return (
@@ -76,11 +105,12 @@ export function QuickAddTask({ visible, workspaceId, onClose }: QuickAddTaskProp
 				</View>
 
 				<View style={styles.body}>
+					{/* Natural language input */}
 					<TextInput
 						style={[styles.titleInput, { color: colors.text }]}
 						value={title}
-						onChangeText={setTitle}
-						placeholder="What needs to be done?"
+						onChangeText={(t) => { setTitle(t); setAiParsed(false); }}
+						placeholder='Try "Buy groceries tomorrow" or "Weekly standup every Monday"'
 						placeholderTextColor={colors.textSecondary}
 						autoFocus
 						multiline
@@ -88,6 +118,50 @@ export function QuickAddTask({ visible, workspaceId, onClose }: QuickAddTaskProp
 						blurOnSubmit
 						onSubmitEditing={handleCreate}
 					/>
+
+					{/* AI Parse Button */}
+					<Pressable
+						style={[styles.aiParseBtn, { backgroundColor: aiParsed ? colors.success + "15" : colors.tint + "10", borderColor: aiParsed ? colors.success : colors.tint }]}
+						onPress={handleAIParse}
+						disabled={parseTask.isPending || !title.trim()}
+					>
+						{parseTask.isPending ? (
+							<ActivityIndicator size="small" color={colors.tint} />
+						) : (
+							<>
+								<Text style={styles.aiIcon}>{aiParsed ? "\u2713" : "\u2728"}</Text>
+								<Text style={[styles.aiParseText, { color: aiParsed ? colors.success : colors.tint }]}>
+									{aiParsed ? "Parsed" : "Parse with AI"}
+								</Text>
+							</>
+						)}
+					</Pressable>
+
+					{/* Parsed info */}
+					{aiParsed && (dueDate || recurrenceRule) && (
+						<View style={[styles.parsedInfo, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+							{dueDate && (
+								<View style={styles.parsedRow}>
+									<Text style={[styles.parsedLabel, { color: colors.textSecondary }]}>Due</Text>
+									<Text style={[styles.parsedValue, { color: colors.text }]}>
+										{new Date(dueDate).toLocaleDateString()}
+									</Text>
+									<Pressable onPress={() => setDueDate(null)}>
+										<Text style={{ color: colors.danger, fontSize: 14 }}>{"\u2715"}</Text>
+									</Pressable>
+								</View>
+							)}
+							{recurrenceRule && (
+								<View style={styles.parsedRow}>
+									<Text style={[styles.parsedLabel, { color: colors.textSecondary }]}>Repeats</Text>
+									<Text style={[styles.parsedValue, { color: colors.text }]}>{recurrenceRule}</Text>
+									<Pressable onPress={() => setRecurrenceRule(null)}>
+										<Text style={{ color: colors.danger, fontSize: 14 }}>{"\u2715"}</Text>
+									</Pressable>
+								</View>
+							)}
+						</View>
+					)}
 
 					<Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>Priority</Text>
 					<View style={styles.priorityRow}>
@@ -139,9 +213,35 @@ const styles = StyleSheet.create({
 	titleInput: {
 		fontSize: 20,
 		fontWeight: "600",
-		marginBottom: 24,
+		marginBottom: 12,
 		lineHeight: 28,
 	},
+	aiParseBtn: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		gap: 6,
+		paddingVertical: 10,
+		borderRadius: 8,
+		borderWidth: 1,
+		marginBottom: 16,
+	},
+	aiIcon: { fontSize: 16 },
+	aiParseText: { fontSize: 14, fontWeight: "600" },
+	parsedInfo: {
+		padding: 12,
+		borderRadius: 10,
+		borderWidth: 1,
+		marginBottom: 16,
+		gap: 8,
+	},
+	parsedRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		gap: 8,
+	},
+	parsedLabel: { fontSize: 12, fontWeight: "700", width: 60 },
+	parsedValue: { fontSize: 14, flex: 1 },
 	sectionLabel: {
 		fontSize: 12,
 		fontWeight: "700",

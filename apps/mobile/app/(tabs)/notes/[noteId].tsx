@@ -11,25 +11,37 @@ import {
 	View,
 } from "react-native";
 
+import { Breadcrumbs, type Crumb } from "@/components/navigation/Breadcrumbs";
+import { CommentsPanel } from "@/components/collaboration/CommentsPanel";
+import { ShareSheet } from "@/components/collaboration/ShareSheet";
+import { AIAssistPanel } from "@/components/notes/AIAssistPanel";
 import { BlockEditor } from "@/components/notes/BlockEditor";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
-import { parseBlocks, useDeleteNote, useNoteDetailQuery, useUpdateNote } from "@/lib/notes";
+import { parseBlocks, useFoldersQuery, useDeleteNote, useNoteDetailQuery, useUpdateNote } from "@/lib/notes";
 import type { NoteBlock } from "@/lib/notes";
+import { useWorkspaceStore } from "@/stores/workspace";
+import { useNavigationStore } from "@/stores/navigation";
 
 export default function NoteEditorScreen() {
 	const { noteId } = useLocalSearchParams<{ noteId: string }>();
 	const colorScheme = useColorScheme();
 	const colors = Colors[colorScheme];
 
+	const workspaceId = useWorkspaceStore((s) => s.activeWorkspaceId);
 	const { data: note } = useNoteDetailQuery(noteId);
+	const { data: folders } = useFoldersQuery(workspaceId || "");
 	const updateNote = useUpdateNote();
 	const deleteNote = useDeleteNote();
+	const { addRecent } = useNavigationStore();
 
 	const [title, setTitle] = useState("");
 	const [blocks, setBlocks] = useState<NoteBlock[]>([]);
 	const [isPinned, setIsPinned] = useState(false);
-	const saveTimerRef = useRef<ReturnType<typeof setTimeout>>();
+	const [showAI, setShowAI] = useState(false);
+	const [showComments, setShowComments] = useState(false);
+	const [showShare, setShowShare] = useState(false);
+	const saveTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
 	// Load note data
 	useEffect(() => {
@@ -37,8 +49,15 @@ export default function NoteEditorScreen() {
 			setTitle(note.title);
 			setBlocks(parseBlocks(note.contentBlocksJson));
 			setIsPinned(note.isPinned);
+			addRecent({
+				id: note.id,
+				title: note.title,
+				icon: note.isPinned ? "\uD83D\uDCCC" : "\uD83D\uDCC4",
+				route: `/(tabs)/notes/${note.id}`,
+				type: "note",
+			});
 		}
-	}, [note]);
+	}, [note, addRecent]);
 
 	// Auto-save with debounce
 	const scheduleAutoSave = useCallback(() => {
@@ -92,11 +111,17 @@ export default function NoteEditorScreen() {
 					title: "",
 					headerRight: () => (
 						<View style={styles.headerActions}>
+							<Pressable style={styles.headerBtn} onPress={() => setShowAI(true)}>
+								<Text style={{ fontSize: 16 }}>{"\u2728"}</Text>
+							</Pressable>
+							<Pressable style={styles.headerBtn} onPress={() => setShowComments(true)}>
+								<Text style={{ fontSize: 16 }}>{"\uD83D\uDCAC"}</Text>
+							</Pressable>
+							<Pressable style={styles.headerBtn} onPress={() => setShowShare(true)}>
+								<Text style={{ fontSize: 16 }}>{"\uD83D\uDD17"}</Text>
+							</Pressable>
 							<Pressable style={styles.headerBtn} onPress={handleTogglePin}>
 								<Text style={{ fontSize: 16 }}>{isPinned ? "📌" : "📍"}</Text>
-							</Pressable>
-							<Pressable style={styles.headerBtn} onPress={handleDelete}>
-								<Text style={[styles.headerBtnText, { color: colors.danger }]}>Delete</Text>
 							</Pressable>
 						</View>
 					),
@@ -107,6 +132,20 @@ export default function NoteEditorScreen() {
 				behavior={Platform.OS === "ios" ? "padding" : "height"}
 				style={[styles.container, { backgroundColor: colors.background }]}
 			>
+				{/* Breadcrumbs */}
+				<Breadcrumbs
+					crumbs={[
+						{ label: "Notes", route: "/(tabs)/notes", icon: "\uD83D\uDCC4" },
+						...(note?.folderId && folders
+							? (() => {
+									const folder = folders.find((f) => f.id === note.folderId);
+									return folder ? [{ label: folder.name, route: "/(tabs)/notes", icon: "\uD83D\uDCC1" }] : [];
+								})()
+							: []),
+						{ label: title || "Untitled" },
+					]}
+				/>
+
 				{/* Title */}
 				<TextInput
 					style={[styles.titleInput, { color: colors.text }]}
@@ -156,6 +195,49 @@ export default function NoteEditorScreen() {
 					</View>
 				)}
 			</KeyboardAvoidingView>
+
+			{/* Comments */}
+			<CommentsPanel
+				visible={showComments}
+				onClose={() => setShowComments(false)}
+				pageType="note"
+				pageId={noteId}
+			/>
+
+			{/* Share */}
+			<ShareSheet
+				visible={showShare}
+				onClose={() => setShowShare(false)}
+				pageType="note"
+				pageId={noteId}
+				pageTitle={title || "Untitled"}
+			/>
+
+			{/* AI Assistant */}
+			<AIAssistPanel
+				visible={showAI}
+				onClose={() => setShowAI(false)}
+				content={blocks.map((b) => b.content).filter(Boolean).join("\n")}
+				pageContext={title}
+				onInsert={(text) => {
+					const newBlock: NoteBlock = {
+						id: crypto.randomUUID(),
+						type: "text",
+						content: text,
+					};
+					setBlocks([...blocks, newBlock]);
+					scheduleAutoSave();
+				}}
+				onReplace={(text) => {
+					const newBlock: NoteBlock = {
+						id: crypto.randomUUID(),
+						type: "text",
+						content: text,
+					};
+					setBlocks([newBlock]);
+					scheduleAutoSave();
+				}}
+			/>
 		</>
 	);
 }

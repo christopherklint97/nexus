@@ -1,3 +1,4 @@
 // @nexus/sync - Offline-first sync engine
-// Will be implemented in Phase 6
-export {};
+
+export { SyncEngine, type SyncConfig, type SyncStatus } from "./engine";
+export { useSyncEngine, SyncProvider } from "./react";

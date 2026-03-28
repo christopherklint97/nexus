@@ -29,7 +29,15 @@
 		"web": {
 			"bundler": "metro",
 			"output": "static",
-			"favicon": "./assets/images/favicon.png"
+			"favicon": "./assets/images/favicon.png",
+			"name": "Nexus",
+			"shortName": "Nexus",
+			"description": "Your Life, Unified — tasks, notes, shopping, recipes, calendar in one app",
+			"backgroundColor": "#1A1A2E",
+			"themeColor": "#4361EE",
+			"display": "standalone",
+			"orientation": "any",
+			"startUrl": "/"
 		},
 		"plugins": ["expo-router"],
 		"experiments": {

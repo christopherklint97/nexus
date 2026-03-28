@@ -80,6 +80,7 @@ export function useCreateTask() {
 			status?: string;
 			priority?: number;
 			dueDate?: string;
+			recurrenceRule?: string;
 			parentTaskId?: string;
 			workspaceId: string;
 		}) => {
@@ -106,6 +107,7 @@ export function useUpdateTask() {
 			status?: string;
 			priority?: number;
 			dueDate?: string;
+			recurrenceRule?: string;
 		}) => {
 			const res = await api.patch(`/api/tasks/${id}`, input);
 			const json = await res.json();

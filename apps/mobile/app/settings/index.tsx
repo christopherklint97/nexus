@@ -1,16 +1,65 @@
 import { Stack, router } from "expo-router";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
+import { toast } from "@/components/ui/Toast";
 import { useCalendarStatus } from "@/lib/calendar";
+import { useExportNotesMarkdown } from "@/lib/importexport";
+import { api } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
+import { useWorkspaceStore } from "@/stores/workspace";
 
 export default function SettingsScreen() {
 	const colorScheme = useColorScheme();
 	const colors = Colors[colorScheme];
 	const { user, logout } = useAuthStore();
-	const { data: calStatus } = useCalendarStatus();
+	const workspaceId = useWorkspaceStore((s) => s.activeWorkspaceId);
+	const { data: calStatus, refetch: refetchCalStatus } = useCalendarStatus();
+	const exportMarkdown = useExportNotesMarkdown();
+
+	const handleExportNotes = () => {
+		if (!workspaceId) return;
+		exportMarkdown.mutate(workspaceId, {
+			onSuccess: (files) => {
+				toast.success(`${files.length} notes exported to Markdown`);
+			},
+			onError: () => toast.error("Export failed"),
+		});
+	};
+
+	const handleExportWorkspace = async () => {
+		if (!workspaceId) return;
+		try {
+			const res = await api.get(`/api/io/export/workspace?workspaceId=${workspaceId}`);
+			const json = await res.json();
+			toast.success("Workspace backup created");
+		} catch {
+			toast.error("Export failed");
+		}
+	};
+
+	const handleCalendarToggle = async () => {
+		if (calStatus?.connected) {
+			Alert.alert("Disconnect Google Calendar", "Remove Google Calendar connection?", [
+				{ text: "Cancel", style: "cancel" },
+				{
+					text: "Disconnect",
+					style: "destructive",
+					onPress: async () => {
+						await api.delete("/api/calendar/google/disconnect");
+						refetchCalStatus();
+					},
+				},
+			]);
+		} else {
+			const res = await api.get("/api/calendar/google/auth");
+			const json = await res.json();
+			if (json.data?.url) {
+				Linking.openURL(json.data.url);
+			}
+		}
+	};
 
 	const handleLogout = () => {
 		Alert.alert("Sign Out", "Are you sure you want to sign out?", [
@@ -58,8 +107,9 @@ export default function SettingsScreen() {
 					<Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
 						Connected Accounts
 					</Text>
-					<View
+					<Pressable
 						style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}
+						onPress={handleCalendarToggle}
 					>
 						<Text style={[styles.rowLabel, { color: colors.text }]}>Google Calendar</Text>
 						<View
@@ -74,10 +124,10 @@ export default function SettingsScreen() {
 									{ color: calStatus?.connected ? colors.success : colors.textSecondary },
 								]}
 							>
-								{calStatus?.connected ? "Connected" : "Not connected"}
+								{calStatus?.connected ? "Connected" : "Tap to connect"}
 							</Text>
 						</View>
-					</View>
+					</Pressable>
 				</View>
 
 				{/* Preferences */}
@@ -94,6 +144,44 @@ export default function SettingsScreen() {
 					>
 						<Text style={[styles.rowLabel, { color: colors.text }]}>Default View (Tasks)</Text>
 						<Text style={[styles.rowValue, { color: colors.textSecondary }]}>List</Text>
+					</View>
+				</View>
+
+				{/* Data */}
+				<View style={[styles.section, { borderBottomColor: colors.border }]}>
+					<Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>Data</Text>
+					<Pressable
+						style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}
+						onPress={handleExportNotes}
+					>
+						<Text style={[styles.rowLabel, { color: colors.text }]}>Export Notes (Markdown)</Text>
+						<Text style={[styles.rowValue, { color: colors.tint }]}>{"\u2192"}</Text>
+					</Pressable>
+					<Pressable
+						style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}
+						onPress={handleExportWorkspace}
+					>
+						<Text style={[styles.rowLabel, { color: colors.text }]}>Full Backup (JSON)</Text>
+						<Text style={[styles.rowValue, { color: colors.tint }]}>{"\u2192"}</Text>
+					</Pressable>
+				</View>
+
+				{/* Integrations */}
+				<View style={[styles.section, { borderBottomColor: colors.border }]}>
+					<Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+						Integrations
+					</Text>
+					<View
+						style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}
+					>
+						<Text style={[styles.rowLabel, { color: colors.text }]}>API Keys</Text>
+						<Text style={[styles.rowValue, { color: colors.textSecondary }]}>Manage</Text>
+					</View>
+					<View
+						style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}
+					>
+						<Text style={[styles.rowLabel, { color: colors.text }]}>Webhooks</Text>
+						<Text style={[styles.rowValue, { color: colors.textSecondary }]}>Manage</Text>
 					</View>
 				</View>
 
