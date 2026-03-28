@@ -1,0 +1,29 @@
+services:
+  api:
+    build:
+      context: .
+      target: api
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - DATABASE_URL=/data/nexus.db
+    env_file:
+      - apps/api/.env
+    volumes:
+      - api-data:/data
+      - ./apps/api/users.csv:/app/apps/api/users.csv:ro
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      target: web
+    ports:
+      - "4001:4001"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  api-data:

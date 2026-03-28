@@ -1,0 +1,11 @@
+node_modules
+.turbo
+.expo
+dist
+*.db
+*.db-wal
+*.db-shm
+.env
+.env.local
+.git
+users.csv

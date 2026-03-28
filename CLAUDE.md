@@ -44,8 +44,26 @@ bun run dev
 pnpm run dev
 ```
 
+## Docker Deployment
+```bash
+# Build and start both services
+docker compose up -d --build
+
+# Seed users (first time only — edit apps/api/users.csv first)
+docker compose exec api bun run seed
+```
+- **API** → http://localhost:4000
+- **Web** → http://localhost:4001
+- SQLite data persists via the `api-data` Docker volume
+- Tailscale sidecars (in infrastructure compose) proxy HTTPS to these ports
+
+## User Management
+- Registration is disabled. Accounts are created via `apps/api/users.csv` and `bun run seed`.
+- See `apps/api/users.csv.example` for the format.
+- Re-running seed updates passwords for existing users.
+
 ## API Endpoints
-- `POST /api/auth/register|login|refresh` — Authentication
+- `POST /api/auth/login|refresh` — Authentication (registration disabled)
 - `GET|POST|PATCH|DELETE /api/tasks` — Tasks + labels
 - `GET|POST|PATCH|DELETE /api/shopping/lists|items` — Shopping lists & items
 - `POST /api/shopping/routes/optimize` — Nearest-neighbor route optimization
