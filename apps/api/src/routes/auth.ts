@@ -1,13 +1,12 @@
 import { zValidator } from "@hono/zod-validator";
 import { users, workspaces } from "@nexus/db/schema";
-import { loginSchema, registerSchema } from "@nexus/shared/validators";
+import { loginSchema } from "@nexus/shared/validators";
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import {
 	createAccessToken,
 	createRefreshToken,
-	hashPassword,
 	verifyPassword,
 	verifyToken,
 } from "../lib/auth.js";
@@ -16,34 +15,11 @@ import { authMiddleware } from "../middleware/auth.js";
 
 const auth = new Hono();
 
-auth.post("/register", zValidator("json", registerSchema), async (c) => {
-	const { email, password, name } = c.req.valid("json");
-
-	const existing = db.select().from(users).where(eq(users.email, email)).get();
-	if (existing) {
-		return c.json({ error: { message: "Email already registered", code: "EMAIL_EXISTS" } }, 409);
-	}
-
-	const passwordHash = await hashPassword(password);
-	const userId = crypto.randomUUID();
-
-	db.insert(users).values({ id: userId, email, name, passwordHash }).run();
-
-	// Create a default personal workspace
-	db.insert(workspaces).values({ name: "Personal", ownerId: userId }).run();
-
-	const accessToken = await createAccessToken(userId);
-	const refreshToken = await createRefreshToken(userId);
-
+// Registration is disabled — accounts are created via the seed script
+auth.post("/register", (c) => {
 	return c.json(
-		{
-			data: {
-				user: { id: userId, email, name },
-				accessToken,
-				refreshToken,
-			},
-		},
-		201,
+		{ error: { message: "Registration is disabled", code: "REGISTRATION_DISABLED" } },
+		403,
 	);
 });
 
